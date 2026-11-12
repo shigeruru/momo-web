@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>授权仪表盘 - MOMO</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;500;700&family=Playfair+Display:ital,wght@0,600;1,600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        
+        body {
+            background-image: url('images/bg.jpg'); /* 本地背景 */
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            background-color: #050505;
+            color: #fff; 
+            min-height: 100vh;
+            display: flex; flex-direction: column; justify-content: center; align-items: center; 
+            padding: 20px; gap: 20px; overflow-x: hidden;
+        }
+
+        @keyframes slideDownFade {
+            0% { opacity: 0; transform: translateY(-60px) scale(0.98); filter: blur(10px); }
+            100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+        }
+
+        .glass-container {
+            position: relative; width: 800px; max-width: 100%;
+            border-radius: 32px; overflow: hidden;
+            backdrop-filter: blur(25px) saturate(180%); -webkit-backdrop-filter: blur(25px) saturate(180%);
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: inset 1px 1px 2px rgba(255, 255, 255, 0.6), inset -1px -1px 2px rgba(0, 0, 0, 0.3), 0 30px 60px rgba(0, 0, 0, 0.5);
+            --mouse-x: 50%; --mouse-y: 50%;
+            animation: slideDownFade 1.2s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; opacity: 0;
+        }
+
+        .glass-container:nth-of-type(1) { animation-delay: 0.1s; }
+        .glass-container:nth-of-type(2) { animation-delay: 0.3s; }
+
+        .glass-container::before {
+            content: ''; position: absolute; inset: 0;
+            background: radial-gradient(600px circle at var(--mouse-x) var(--mouse-y), rgba(255, 255, 255, 0.12), transparent 40%);
+            opacity: 0; transition: opacity 0.5s; pointer-events: none; z-index: 0;
+        }
+        .glass-container:hover::before { opacity: 1; }
+
+        .content-wrapper { position: relative; z-index: 2; padding: 40px; display: flex; flex-direction: column; gap: 30px; }
+        .header-section { display: flex; align-items: center; gap: 20px; }
+        .avatar {
+            width: 80px; height: 80px; border-radius: 24px; background: rgba(255, 255, 255, 0.15);
+            display: flex; justify-content: center; align-items: center;
+            font-size: 32px; font-family: 'Playfair Display', serif; font-weight: 600;
+            box-shadow: inset 1px 1px 2px rgba(255, 255, 255, 0.5); border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .info-group { display: flex; flex-direction: column; gap: 5px; }
+        .username { font-size: 26px; font-family: 'Playfair Display', serif; font-weight: 600; text-shadow: 0 2px 10px rgba(0,0,0,0.6); letter-spacing: 1px;}
+        .tag { background: rgba(255, 255, 255, 0.15); padding: 4px 12px; border-radius: 20px; font-size: 12px; color: #fff; display: inline-block; width: fit-content; border: 1px solid rgba(255,255,255,0.2); backdrop-filter: blur(5px); }
+        .divider { width: 100%; height: 1px; background: rgba(255, 255, 255, 0.15); }
+
+        .stats-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .stat-item { background: rgba(0, 0, 0, 0.2); padding: 20px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.1); transition: 0.3s; }
+        .stat-item:hover { background: rgba(0, 0, 0, 0.3); transform: translateY(-2px); }
+        .stat-title { font-size: 12px; color: #ccc; margin-bottom: 8px; letter-spacing: 1px;}
+        .stat-value { font-size: 32px; font-family: 'Playfair Display', serif; font-weight: 600; text-shadow: 0 2px 5px rgba(0,0,0,0.3);}
+        .stat-value.time { font-size: 20px; font-family: 'Inter', monospace; }
+
+        .details-list { display: flex; flex-direction: column; gap: 15px; }
+        .detail-row { display: flex; justify-content: space-between; align-items: center; background: rgba(255, 255, 255, 0.05); padding: 15px 20px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.1); transition: 0.3s; }
+        .detail-row:hover { background: rgba(255, 255, 255, 0.1); box-shadow: inset 0 0 10px rgba(255,255,255,0.05);}
+        .detail-label { color: #ccc; font-size: 14px; }
+        .detail-val-box { display: flex; align-items: center; gap: 10px; }
+        .data-value { font-family: monospace; font-size: 15px; color: #fff; }
+        .action-btn { background: none; border: none; color: #fff; cursor: pointer; font-size: 16px; opacity: 0.7; transition: 0.3s;}
+        .action-btn:hover { opacity: 1; transform: scale(1.1); color: #fff; text-shadow: 0 0 10px #fff;}
+
+        .btn-group { display: flex; gap: 15px; margin-top: 10px; }
+        .btn-liquid { flex: 1; padding: 16px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.3); background: rgba(255,255,255,0.1); color: #fff; font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; backdrop-filter: blur(5px); }
+        .btn-liquid:hover { background: rgba(255,255,255,0.2); transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.2);}
+        .btn-liquid:active { transform: scale(0.96); background: rgba(255,255,255,0.3); }
+        .btn-danger { background: rgba(255, 50, 50, 0.15); border-color: rgba(255, 50, 50, 0.3); flex: 0.5; }
+        .btn-danger:hover { background: rgba(255, 50, 50, 0.3); box-shadow: 0 5px 15px rgba(255,50,50,0.2);}
+
+        .music-player { padding: 20px 30px; display: flex; align-items: center; gap: 25px; z-index: 2; position: relative; }
+        .album-art-container { position: relative; width: 70px; height: 70px; border-radius: 50%; background: #111; border: 2px solid rgba(255,255,255,0.2); display: flex; justify-content: center; align-items: center; flex-shrink: 0; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+        .album-art { width: 90%; height: 90%; border-radius: 50%; background-image: url('https://picsum.photos/200'); background-size: cover; background-position: center; animation: spin 8s linear infinite; animation-play-state: paused; }
+        .album-art::after { content: ''; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 15px; height: 15px; border-radius: 50%; background: #222; border: 2px solid #555; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+        .music-player.playing .album-art { animation-play-state: running; }
+
+        .music-info { flex: 1; display: flex; flex-direction: column; gap: 8px; }
+        .song-title { font-size: 16px; font-weight: 600; letter-spacing: 1px; text-shadow: 0 2px 5px rgba(0,0,0,0.5);}
+        .song-artist { font-size: 12px; color: #bbb; }
+
+        .progress-container { display: flex; align-items: center; gap: 10px; font-size: 11px; font-family: monospace; color: #aaa; }
+        .progress-bar-bg { flex: 1; height: 4px; background: rgba(255,255,255,0.2); border-radius: 2px; cursor: pointer; position: relative; transition: 0.2s;}
+        .progress-bar-bg:hover { height: 6px; background: rgba(255,255,255,0.3); }
+        .progress-bar-fill { height: 100%; background: #fff; width: 0%; border-radius: 2px; position: relative; transition: width 0.1s linear; box-shadow: 0 0 10px rgba(255,255,255,0.5); }
+        .progress-bar-fill::after { content: ''; position: absolute; right: -5px; top: -3px; width: 10px; height: 10px; border-radius: 50%; background: #fff; box-shadow: 0 0 5px rgba(0,0,0,0.5); opacity: 0; transition: 0.2s; }
+        .progress-bar-bg:hover .progress-bar-fill::after { opacity: 1; }
+
+        .controls { display: flex; align-items: center; gap: 20px; }
+        .control-btn { background: none; border: none; color: #fff; font-size: 20px; cursor: pointer; transition: 0.3s; opacity: 0.7; }
+        .control-btn:hover { opacity: 1; transform: scale(1.1); text-shadow: 0 0 10px #fff; }
+        .play-btn { width: 45px; height: 45px; border-radius: 50%; background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); display: flex; justify-content: center; align-items: center; font-size: 18px; opacity: 1; box-shadow: inset 1px 1px 2px rgba(255,255,255,0.5); transition: 0.2s; }
+        .play-btn:hover { background: rgba(255,255,255,0.3); }
+        .play-btn:active { transform: scale(0.95); }
+
+        .overlay-hint { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 9999; display: flex; justify-content: center; align-items: center; flex-direction: column; gap: 20px; backdrop-filter: blur(5px); transition: opacity 0.5s; }
+        .overlay-hint i { font-size: 40px; color: #fff; animation: bounce 1.5s infinite; }
+        .overlay-hint span { color: #ddd; font-size: 14px; letter-spacing: 2px; }
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+
+        @media (max-width: 600px) {
+            .content-wrapper { padding: 25px; }
+            .stats-row { grid-template-columns: 1fr; }
+            .btn-group { flex-direction: column; }
+            .music-player { flex-direction: column; gap: 15px; padding: 20px; text-align: center; }
+            .music-info { width: 100%; }
+            .progress-container { width: 100%; }
+            .glass-container { backdrop-filter: blur(15px) saturate(150%); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="overlay-hint" id="musicHint" onclick="startExperience()">
+        <i class="fas fa-hand-pointer"></i>
+        <span>点击屏幕任意位置进入</span>
+    </div>
+
+    <!-- 用户面板 -->
+    <div class="glass-container" id="glass1">
+        <div class="content-wrapper">
+            <div class="header-section">
+                <div class="avatar" id="avatarLetter">?</div>
+                <div class="info-group">
+                    <div class="username" id="displayName">加载中...</div>
+                    <div class="tag">尊贵的授权用户</div>
+                </div>
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="stats-row">
+                <div class="stat-item">
+                    <div class="stat-title">TOKEN 余额</div>
+                    <div class="stat-value" id="displayQuota">0</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-title">卡密授权到期时间</div>
+                    <div class="stat-value time" id="displayExpire">加载中...</div>
+                </div>
+            </div>
+
+            <div class="details-list">
+                <div class="detail-row">
+                    <span class="detail-label">绑定的 QQ 账号</span>
+                    <div class="detail-val-box">
+                        <span class="data-value" id="displayQQ">未绑定</span>
+                    </div>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">当前绑定的卡密</span>
+                    <div class="detail-val-box">
+                        <span class="data-value" id="displayCard">-</span>
+                        <button class="action-btn" onclick="copyCard()"><i class="fas fa-copy"></i></button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="btn-group">
+                <button class="btn-liquid" onclick="copyCard()">复制卡密</button>
+                <button class="btn-liquid btn-danger" onclick="logout()">安全退出</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 音乐播放器 -->
+    <div class="glass-container" id="glass2">
+        <div class="music-player" id="musicPlayer">
+            <div class="album-art-container">
+                <div class="album-art"></div>
+            </div>
+            <div class="music-info">
+                <div class="song-title">深海迷航 (Deep Ocean)</div>
+                <div class="song-artist">MOMO SYSTEM</div>
+                <div class="progress-container">
+                    <span id="currentTime">0:00</span>
+                    <div class="progress-bar-bg" onclick="seek(event)">
+                        <div class="progress-bar-fill" id="progressFill"></div>
+                    </div>
+                    <span id="totalTime">0:00</span>
+                </div>
+            </div>
+            <div class="controls">
+                <button class="control-btn"><i class="fas fa-step-backward"></i></button>
+                <button class="control-btn play-btn" onclick="togglePlay()">
+                    <i class="fas fa-play" id="playIcon"></i>
+                </button>
+                <button class="control-btn"><i class="fas fa-step-forward"></i></button>
+            </div>
+        </div>
+    </div>
+
+    <audio id="audioPlayer" src="music/bgm.mp3" preload="auto" loop></audio>
+
+    <script>
+        // ================= 替换为你的 Supabase 配置 =================
+        const SUPABASE_URL = '你的SUPABASE_URL';
+        const SUPABASE_ANON_KEY = '你的SUPABASE_ANON_KEY';
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        // ============================================================
+
+        let currentCardKey = "";
+
+        // 鼠标聚光灯逻辑
+        const glassPanels = document.querySelectorAll('.glass-container');
+        glassPanels.forEach(panel => {
+            panel.addEventListener('mousemove', e => {
+                const rect = panel.getBoundingClientRect();
+                const x = e.clientX - rect.left; const y = e.clientY - rect.top;
+                panel.style.setProperty('--mouse-x', `${x}px`); panel.style.setProperty('--mouse-y', `${y}px`);
+            });
+        });
+
+        // 音乐逻辑
+        const audio = document.getElementById('audioPlayer');
+        const playIcon = document.getElementById('playIcon');
+        const playerContainer = document.getElementById('musicPlayer');
+        const progressFill = document.getElementById('progressFill');
+        const currentTimeEl = document.getElementById('currentTime');
+        const totalTimeEl = document.getElementById('totalTime');
+        const hintOverlay = document.getElementById('musicHint');
+
+        function startExperience() {
+            hintOverlay.style.opacity = '0';
+            setTimeout(() => hintOverlay.style.display = 'none', 500);
+            audio.play().then(() => {
+                playIcon.classList.replace('fa-play', 'fa-pause');
+                playerContainer.classList.add('playing');
+            }).catch(e => console.log("自动播放失败。"));
+        }
+
+        function togglePlay() {
+            if (!audio.src) { alert("没有找到音乐文件！"); return; }
+            if (audio.paused) {
+                audio.play().catch(e => alert("播放失败。"));
+                playIcon.classList.replace('fa-play', 'fa-pause');
+                playerContainer.classList.add('playing');
+            } else {
+                audio.pause(); playIcon.classList.replace('fa-pause', 'fa-play'); playerContainer.classList.remove('playing');
+            }
+        }
+
+        function formatTime(seconds) {
+            if (isNaN(seconds)) return "0:00";
+            const min = Math.floor(seconds / 60); const sec = Math.floor(seconds % 60);
+            return `${min}:${sec < 10 ? '0' : ''}${sec}`;
+        }
+        audio.addEventListener('loadedmetadata', () => { totalTimeEl.innerText = formatTime(audio.duration); });
+        audio.addEventListener('timeupdate', () => {
+            if(audio.duration) {
+                const percent = (audio.currentTime / audio.duration) * 100;
+                progressFill.style.width = `${percent}%`; currentTimeEl.innerText = formatTime(audio.currentTime);
+            }
+        });
+        function seek(e) {
+            const bar = e.currentTarget; const rect = bar.getBoundingClientRect();
+            const percent = (e.clientX - rect.left) / rect.width;
+            if(audio.duration) audio.currentTime = percent * audio.duration;
+        }
+
+        // 加载用户数据
+        window.onload = async function() {
+            const currentUsername = localStorage.getItem("momo_user");
+            if (!currentUsername) { window.location.href = 'index.html'; return; }
+            
+            try {
+                const { data, error } = await supabase
+                    .from('cards')
+                    .select('*')
+                    .eq('username', currentUsername)
+                    .single();
+
+                if (error || !data) {
+                    alert("获取数据失败，请重新登录");
+                    window.location.href = 'index.html';
+                    return;
+                }
+
+                document.getElementById("displayName").innerText = data.username;
+                document.getElementById("avatarLetter").innerText = data.username.charAt(0).toUpperCase();
+                document.getElementById("displayQuota").innerText = data.token_quota || 0;
+                document.getElementById("displayQQ").innerText = data.qq || "未绑定";
+                document.getElementById("displayExpire").innerText = data.expiry_date;
+                
+                // 显示并保存卡密
+                currentCardKey = data.card_key;
+                document.getElementById("displayCard").innerText = data.card_key;
+
+            } catch (e) { console.error(e); alert("网络请求出错"); }
+        };
+
+        // 其他功能
+        function copyCard() { 
+            if(!currentCardKey) return; 
+            navigator.clipboard.writeText(currentCardKey).then(() => alert("卡密已复制！")); 
+        }
+        function logout() { localStorage.removeItem("momo_user"); window.location.href = 'index.html'; }
+    </script>
+</body>
+</html>
