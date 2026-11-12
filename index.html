@@ -152,8 +152,8 @@
 
                 localStorage.setItem("momo_user", username);
                 window.location.href = 'profile.html';
-            } catch (err) {
-                alert("网络请求失败！");
+            }
+                catch (err) { alert("真实错误: " + err.message);
             }
         }
 
