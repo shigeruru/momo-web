@@ -7,13 +7,14 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;500;700&family=Playfair+Display:ital,wght@0,600;1,600&display=swap" rel="stylesheet">
     
+    <!-- Supabase 库 -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
         
         body {
-            background-image: url('bg.jpg'); /* 图片路径 */
+            background-image: url('bg.jpg');
             background-size: cover;
             background-position: center;
             background-attachment: fixed;
@@ -90,7 +91,7 @@
                 </div>
                 <div class="input-group">
                     <i class="fas fa-ticket-alt"></i>
-                    <input type="text" id="regCard" placeholder="输入卡密 (如 MOMO-111)">
+                    <input type="text" id="regCard" placeholder="输入卡密 (如 TEST-1234)">
                 </div>
                 <div class="input-group">
                     <i class="fab fa-qq"></i>
@@ -106,10 +107,13 @@
     </div>
 
     <script>
-        // 已经内置了你的 Supabase 密钥
+        // ================= 核心初始化 =================
         const SUPABASE_URL = 'https://ifrlrkjmqheivdlainur.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_4-FnUR-78EsCyJk_jyQGYA_Hk0Yr5WJ';
+        
+        // 声明 supabase 客户端（只声明一次）
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        // ==============================================
 
         function switchTab(type) {
             const tabLogin = document.getElementById('tab-login');
