@@ -7,14 +7,14 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;500;700&family=Playfair+Display:ital,wght@0,600;1,600&display=swap" rel="stylesheet">
     
-    <!-- Supabase 库 -->
+    <!-- 1. 只引入一次 Supabase 库 -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
         
         body {
-            background-image: url('bg.jpg');
+            background-image: url('bg.jpg'); 
             background-size: cover;
             background-position: center;
             background-attachment: fixed;
@@ -107,13 +107,11 @@
     </div>
 
     <script>
-        // ================= 核心初始化 =================
+        // ================= 核心初始化（确保只声明一次） =================
         const SUPABASE_URL = 'https://ifrlrkjmqheivdlainur.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_4-FnUR-78EsCyJk_jyQGYA_Hk0Yr5WJ';
-        
-        // 声明 supabase 客户端（只声明一次）
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        // ==============================================
+        // ================================================================
 
         function switchTab(type) {
             const tabLogin = document.getElementById('tab-login');
@@ -155,7 +153,7 @@
                 localStorage.setItem("momo_user", username);
                 window.location.href = 'profile.html';
             } catch (err) {
-                alert("网络请求失败，请检查控制台报错");
+                alert("网络请求失败！");
             }
         }
 
@@ -201,7 +199,7 @@
                 document.getElementById('loginPass').value = password;
 
             } catch (err) {
-                alert("网络请求失败，请检查控制台报错");
+                alert("网络请求失败！");
             }
         }
     </script>
