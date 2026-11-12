@@ -3,11 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>-授权中心-</title>
+    <title>系统接入 - 授权中心</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;500;700&family=Playfair+Display:ital,wght@0,600;1,600&display=swap" rel="stylesheet">
     
-    <!-- 使用 Fastly 节点，避免网络拦截 -->
     <script src="https://fastly.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <style>
@@ -69,13 +68,12 @@
             margin-top: 10px; 
         }
         
-        /* 登录按钮基础样式 */
         .btn-login {
             position: relative;
             background: #fff; 
             color: #000; 
             box-shadow: 0 0 20px rgba(255,255,255,0.2);
-            overflow: hidden; /* 隐藏溢出的光晕 */
+            overflow: hidden;
             z-index: 1;
         }
         
@@ -84,14 +82,12 @@
             box-shadow: 0 0 30px rgba(255,255,255,0.4); 
         }
 
-        /* 点击加载状态：禁用鼠标，字变灰 */
         .btn-login.loading {
             pointer-events: none;
             color: #555;
             box-shadow: 0 0 15px rgba(0, 210, 255, 0.3);
         }
 
-        /* 内部扫光核心代码 */
         .btn-login.loading::before {
             content: '';
             position: absolute;
@@ -106,10 +102,70 @@
             0% { left: -100%; }
             100% { left: 100%; }
         }
-        /* ============================================== */
+
+        /* ================= 高级液态玻璃 Toast ================= */
+        .toast {
+            position: fixed;
+            top: 40px;
+            left: 50%;
+            /* 初始状态：稍微偏上，透明 */
+            transform: translate(-50%, -30px);
+            padding: 14px 32px;
+            border-radius: 18px; /* 更圆润的边角 */
+            
+            /* 高级感：底色深一点，不要太透，保证文字清晰 */
+            background: rgba(22, 22, 26, 0.88);
+            backdrop-filter: blur(30px) saturate(150%);
+            -webkit-backdrop-filter: blur(30px) saturate(150%);
+            
+            /* 微光边框和内阴影，营造厚度 */
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 
+                inset 0 0 12px rgba(255, 255, 255, 0.05),
+                0 20px 40px rgba(0, 0, 0, 0.6);
+            
+            color: #fff;
+            font-size: 14px;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            z-index: 99999;
+            
+            /* 缓慢弹出动画：easeOutExpo 曲线，起步快，结尾极慢，非常高级 */
+            transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+            opacity: 0;
+            pointer-events: none;
+            text-align: center;
+            max-width: 80%;
+        }
+        
+        /* 弹出后的最终状态 */
+        .toast.show {
+            transform: translate(-50%, 0);
+            opacity: 1;
+        }
+        
+        /* 失败状态：暗红色微光 */
+        .toast.error {
+            border-color: rgba(255, 100, 100, 0.25);
+            box-shadow: 
+                inset 0 0 15px rgba(255, 50, 50, 0.1),
+                0 20px 40px rgba(255, 0, 0, 0.15);
+            color: #ffeded;
+        }
+        
+        /* 成功状态：暗绿色微光 */
+        .toast.success {
+            border-color: rgba(100, 255, 150, 0.25);
+            box-shadow: 
+                inset 0 0 15px rgba(50, 255, 100, 0.1),
+                0 20px 40px rgba(0, 255, 100, 0.15);
+            color: #edffed;
+        }
     </style>
 </head>
 <body>
+
+    <div id="toast" class="toast">提示信息</div>
 
     <div class="glass-box">
         <div class="tabs">
@@ -118,7 +174,6 @@
         </div>
 
         <div class="form-wrapper">
-            <!-- 登录表单 -->
             <div id="form-login" class="form active">
                 <div class="input-group">
                     <i class="fas fa-user"></i>
@@ -128,11 +183,9 @@
                     <i class="fas fa-lock"></i>
                     <input type="password" id="loginPass" placeholder="安全密钥">
                 </div>
-                <!-- 注意这里有 id="loginBtn" -->
                 <button class="btn btn-login" id="loginBtn" onclick="doLogin()">登录</button>
             </div>
 
-            <!-- 注册表单 -->
             <div id="form-register" class="form">
                 <div class="input-group">
                     <i class="fas fa-id-card"></i>
@@ -156,11 +209,22 @@
     </div>
 
     <script>
-        // ================= 核心初始化 =================
         const SUPABASE_URL = 'https://ifrlrkjmqheivdlainur.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_4-FnUR-78EsCyJk_jyQGYA_Hk0Yr5WJ';
         const myDB = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        // ==============================================
+
+        // 高级弹窗提示函数
+        function showToast(msg, type = 'error') {
+            const toast = document.getElementById('toast');
+            toast.innerText = msg;
+            toast.className = 'toast show ' + type;
+            
+            // 3秒后缓慢收回
+            clearTimeout(window.toastTimer);
+            window.toastTimer = setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
 
         function switchTab(type) {
             const tabLogin = document.getElementById('tab-login');
@@ -180,10 +244,9 @@
         async function doLogin() {
             const username = document.getElementById('loginUser').value;
             const password = document.getElementById('loginPass').value;
-            if(!username || !password) return alert("请输入账号和密码！");
+            if(!username || !password) return showToast("请输入账号和密码！", "error");
 
-            // 👇 点击后触发加载动画
-            const btn = document.getElementById('loginBtn'); // 修复了这里的变量名
+            const btn = document.getElementById('loginBtn'); 
             const oldText = btn.innerText;
             btn.classList.add('loading');
             btn.innerText = "验证中...";
@@ -192,15 +255,16 @@
                 const { data, error } = await myDB.from('cards').select('*').eq('username', username).eq('password', password).single();
                 
                 if (error || !data) { 
-                    alert("账号或密码错误！"); 
+                    showToast("账号或密码错误！", "error"); 
                     return; 
                 }
+                showToast("登录成功，正在跳转...", "success");
                 localStorage.setItem("momo_user", username);
-                window.location.href = 'profile.html';
+                // 延迟 1 秒跳转，让用户看清成功提示
+                setTimeout(() => { window.location.href = 'profile.html'; }, 1000);
             } catch (err) { 
-                alert("网络请求失败！具体原因: " + err.message); 
+                showToast("网络请求失败！", "error"); 
             } finally {
-                // 👇 动画结束或报错后，恢复按钮原样
                 btn.classList.remove('loading');
                 btn.innerText = oldText;
             }
@@ -211,24 +275,24 @@
             const card = document.getElementById('regCard').value;
             const qq = document.getElementById('regQQ').value;
             const password = document.getElementById('regPass').value;
-            if(!username || !card || !qq || !password) return alert("请填满所有字段！");
+            if(!username || !card || !qq || !password) return showToast("请填满所有字段！", "error");
             
             try {
                 const { data: cardData, error: cardErr } = await myDB.from('cards').select('*').eq('card_key', card).eq('is_used', false).single();
-                if (cardErr || !cardData) { alert("卡密无效、已被使用或不存在！"); return; }
+                if (cardErr || !cardData) { showToast("卡密无效、已被使用或不存在！", "error"); return; }
                 
                 const today = new Date().toISOString().split('T')[0];
-                if (cardData.expiry_date < today) { alert("该卡密已过期！"); return; }
+                if (cardData.expiry_date < today) { showToast("该卡密已过期！", "error"); return; }
                 
                 const { error: updateErr } = await myDB.from('cards').update({ is_used: true, username: username, password: password, qq: qq }).eq('id', cardData.id);
-                if (updateErr) { alert("激活失败，数据库写入错误！"); return; }
+                if (updateErr) { showToast("激活失败，数据库写入错误！", "error"); return; }
                 
-                alert("激活成功！请使用刚才设置的账号密码登录。");
+                showToast("激活成功！请登录。", "success");
                 switchTab('login');
                 document.getElementById('loginUser').value = username;
                 document.getElementById('loginPass').value = password;
             } catch (err) { 
-                alert("网络请求失败！" + err.message); 
+                showToast("网络请求失败！", "error"); 
             }
         }
     </script>
