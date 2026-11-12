@@ -7,14 +7,13 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;500;700&family=Playfair+Display:ital,wght@0,600;1,600&display=swap" rel="stylesheet">
     
-    <!-- 引入 Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
         
         body {
-            background-image: url('images/bg.jpg'); /* 修改为本地图片路径 */
+            background-image: url('bg.jpg'); /* 图片路径 */
             background-size: cover;
             background-position: center;
             background-attachment: fixed;
@@ -45,7 +44,7 @@
         .tabs span.active { color: #fff; }
         .tabs span.active::after { content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 2px; background: #fff; border-radius: 2px; box-shadow: 0 0 10px #fff; }
 
-        .form-wrapper { position: relative; min-height: 320px; /* 增加了高度适应新输入框 */ }
+        .form-wrapper { position: relative; min-height: 320px; }
         .form { position: absolute; width: 100%; top: 0; left: 0; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); opacity: 0; visibility: hidden; transform: translateX(30px); }
         .form.active { opacity: 1; visibility: visible; transform: translateX(0); }
 
@@ -107,11 +106,10 @@
     </div>
 
     <script>
-        // ================= 替换为你的 Supabase 配置 =================
-       const SUPABASE_URL = 'https://ifrlrkjmqheivdlainur.supabase.co';
-const SUPABASE_ANON_KEY = 'sb_publishable_4-FnUR-78EsCyJk_jyQGYA_Hk0Yr5WJ';
+        // 已经内置了你的 Supabase 密钥
+        const SUPABASE_URL = 'https://ifrlrkjmqheivdlainur.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_4-FnUR-78EsCyJk_jyQGYA_Hk0Yr5WJ';
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        // ============================================================
 
         function switchTab(type) {
             const tabLogin = document.getElementById('tab-login');
@@ -132,7 +130,6 @@ const SUPABASE_ANON_KEY = 'sb_publishable_4-FnUR-78EsCyJk_jyQGYA_Hk0Yr5WJ';
             }
         }
 
-        // 登录 (查询 cards 表里的 username 和 password)
         async function doLogin() {
             const username = document.getElementById('loginUser').value;
             const password = document.getElementById('loginPass').value;
@@ -151,15 +148,13 @@ const SUPABASE_ANON_KEY = 'sb_publishable_4-FnUR-78EsCyJk_jyQGYA_Hk0Yr5WJ';
                     return;
                 }
 
-                // 登录成功，保存账号到本地，跳转个人主页
                 localStorage.setItem("momo_user", username);
                 window.location.href = 'profile.html';
             } catch (err) {
-                alert("网络请求失败！");
+                alert("网络请求失败，请检查控制台报错");
             }
         }
 
-        // 激活 (验证卡密，写入账号、密码和QQ)
         async function doRegister() {
             const username = document.getElementById('regUser').value;
             const card = document.getElementById('regCard').value;
@@ -168,7 +163,6 @@ const SUPABASE_ANON_KEY = 'sb_publishable_4-FnUR-78EsCyJk_jyQGYA_Hk0Yr5WJ';
             if(!username || !card || !qq || !password) return alert("请填满所有字段！");
 
             try {
-                // 1. 检查卡密是否有效且未被使用
                 const { data: cardData, error: cardErr } = await supabase
                     .from('cards')
                     .select('*')
@@ -181,22 +175,15 @@ const SUPABASE_ANON_KEY = 'sb_publishable_4-FnUR-78EsCyJk_jyQGYA_Hk0Yr5WJ';
                     return;
                 }
 
-                // 2. 检查是否过期
                 const today = new Date().toISOString().split('T')[0];
                 if (cardData.expiry_date < today) {
                     alert("该卡密已过期！");
                     return;
                 }
 
-                // 3. 更新数据，绑定账号、密码和 QQ
                 const { error: updateErr } = await supabase
                     .from('cards')
-                    .update({ 
-                        is_used: true,
-                        username: username,
-                        password: password,
-                        qq: qq
-                    })
+                    .update({ is_used: true, username: username, password: password, qq: qq })
                     .eq('id', cardData.id);
 
                 if (updateErr) {
@@ -210,7 +197,7 @@ const SUPABASE_ANON_KEY = 'sb_publishable_4-FnUR-78EsCyJk_jyQGYA_Hk0Yr5WJ';
                 document.getElementById('loginPass').value = password;
 
             } catch (err) {
-                alert("网络请求失败！");
+                alert("网络请求失败，请检查控制台报错");
             }
         }
     </script>
