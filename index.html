@@ -28,47 +28,45 @@
         .input-group input::placeholder { color: #777; }
         .input-group input:focus { background: rgba(0,0,0,0.4); border-color: rgba(255,255,255,0.4); box-shadow: 0 0 15px rgba(255,255,255,0.1); }
         .input-group input:focus + i { color: #fff; }
-        .btn { width: 100%; padding: 16px; border-radius: 14px; border: none; font-size: 15px; font-weight: 600; cursor: pointer; transition: 0.3s; margin-top: 10px; }
-                /* 1. 按钮基础样式 */
+                /* 按钮基础样式 */
         .btn-login {
             position: relative;
-            background: transparent; /* 背景透明 */
+            background: #fff; 
             color: #000; 
             box-shadow: 0 0 20px rgba(255,255,255,0.2);
-            overflow: hidden; /* 裁剪掉多余的旋转光晕 */
-            z-index: 1;
             transition: 0.3s;
+            overflow: hidden; /* 隐藏内部溢出的光晕 */
+            z-index: 1;
+            font-weight: 600;
         }
         
-        /* 悬停时微微放大 */
         .btn-login:hover { 
             transform: translateY(-2px); 
-            box-shadow: 0 0 30px rgba(0, 210, 255, 0.4); /* 悬停时阴影变蓝 */
+            box-shadow: 0 0 30px rgba(255,255,255,0.4); 
         }
 
-        /* 2. 旋转的粗流光边框 */
-        .btn-login::before {
-            content: '';
-            position: absolute;
-            top: -50%; left: -50%; width: 200%; height: 200%;
-            background: conic-gradient(transparent, transparent, transparent, #00d2ff, #00d2ff, transparent);
-            animation: rotate-border 2.5s linear infinite;
-            z-index: -2;
+        /* 点击加载状态：禁用鼠标，字变成灰色 */
+        .btn-login.loading {
+            pointer-events: none;
+            color: #555;
+            box-shadow: 0 0 15px rgba(0, 210, 255, 0.3);
         }
 
-        /* 3. 按钮内部遮罩（露出的 3px 就是发光的边框） */
-        .btn-login::after {
+        /* 内部扫光的核心代码 */
+        .btn-login.loading::before {
             content: '';
             position: absolute;
-            inset: 3px; /* 3px 代表发光的粗细 */
-            background: #fff; /* 按钮内部还是白色的 */
-            border-radius: 11px;
+            top: 0; left: -100%; 
+            width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 210, 255, 0.6), transparent);
+            animation: internal-sweep 1.2s infinite linear;
             z-index: -1;
         }
 
-        /* 4. 旋转动画关键帧 */
-        @keyframes rotate-border {
-            100% { transform: rotate(360deg); }
+        /* 扫光动画：从左到右 */
+        @keyframes internal-sweep {
+            0% { left: -100%; }
+            100% { left: 100%; }
         }
     </style>
 </head>
@@ -114,16 +112,33 @@
             }
         }
 
-        async function doLogin() {
+               async function doLogin() {
             const username = document.getElementById('loginUser').value;
             const password = document.getElementById('loginPass').value;
             if(!username || !password) return alert("请输入账号和密码！");
+
+            // 👇 点击后触发加载动画
+            const btn = document.getElementById('loginBtn');
+            const oldText = btn.innerText;
+            btn.classList.add('loading');
+            btn.innerText = "验证中...";
+
             try {
                 const { data, error } = await myDB.from('cards').select('*').eq('username', username).eq('password', password).single();
-                if (error || !data) { alert("账号或密码错误！"); return; }
+                
+                if (error || !data) { 
+                    alert("账号或密码错误！"); 
+                    return; 
+                }
                 localStorage.setItem("momo_user", username);
                 window.location.href = 'profile.html';
-            } catch (err) { alert("网络请求失败！" + err.message); }
+            } catch (err) { 
+                alert("网络请求失败！具体原因: " + err.message); 
+            } finally {
+                // 👇 动画结束或报错后，恢复按钮原样
+                btn.classList.remove('loading');
+                btn.innerText = oldText;
+            }
         }
 
         async function doRegister() {
