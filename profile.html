@@ -221,10 +221,13 @@
             if (!currentUsername) { window.location.href = 'index.html'; return; }
             
             try {
-                const { data, error } = await myDB.from('cards').select('*').eq('username', currentUsername).single();
-                if (error || !data) {
-                    // 不要直接跳转，可能是网络问题，给用户看一眼
-                    document.getElementById("displayName").innerText = "获取数据失败";
+                                const { data, error } = await myDB.from('cards').select('*').eq('username', currentUsername).single();
+                if (error) {
+                    alert("数据库报错: " + error.message);
+                    return;
+                }
+                if (!data) {
+                    alert("找不到该用户的数据！");
                     return;
                 }
                 document.getElementById("displayName").innerText = data.username;
@@ -234,8 +237,8 @@
                 document.getElementById("displayExpire").innerText = data.expiry_date;
                 currentCardKey = data.card_key;
                 document.getElementById("displayCard").innerText = data.card_key;
-            } catch (e) { 
-                console.error(e); 
+                        } catch (e) { 
+                alert("获取数据失败: " + e.message); 
             }
         };
 
