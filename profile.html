@@ -276,7 +276,7 @@
             if(audio.duration) audio.currentTime = percent * audio.duration;
         }
 
-        window.onload = async function() {
+                window.onload = async function() {
             const currentUsername = localStorage.getItem("momo_user");
             if (!currentUsername) { window.location.href = 'index.html'; return; }
             
@@ -286,6 +286,39 @@
                     document.getElementById("displayName").innerText = "获取数据失败";
                     return;
                 }
+                document.getElementById("displayName").innerText = data.username;
+                document.getElementById("displayQuota").innerText = data.token_quota || 0;
+                document.getElementById("displayQQ").innerText = data.qq || "未绑定";
+                document.getElementById("displayExpire").innerText = data.expiry_date;
+                currentCardKey = data.card_key;
+                document.getElementById("displayCard").innerText = data.card_key;
+
+                // 👇 新增：生成或显示 8 位验证码
+                let currentBindCode = data.bind_code;
+                if (!currentBindCode) {
+                    // 如果数据库里没有，就生成一个 8 位随机数字
+                    currentBindCode = Math.floor(10000000 + Math.random() * 90000000).toString();
+                    // 写入数据库
+                    await myDB.from('cards').update({ bind_code: currentBindCode }).eq('id', data.id);
+                }
+                
+                // 把验证码展示在页面上（插在“复制卡密”按钮的上面）
+                const btnGroup = document.querySelector('.btn-group');
+                const codeDiv = document.createElement('div');
+                codeDiv.className = 'detail-row'; 
+                codeDiv.style.marginTop = '15px';
+                codeDiv.innerHTML = `
+                    <span class="detail-label">进群验证码：</span>
+                    <div class="detail-val-box">
+                        <span class="data-value" style="color: #00d2ff; font-size: 18px; font-weight: bold;">/bind ${currentBindCode}</span>
+                    </div>
+                `;
+                btnGroup.parentNode.insertBefore(codeDiv, btnGroup);
+
+            } catch (e) { 
+                console.error(e); 
+            }
+        };
                 document.getElementById("displayName").innerText = data.username;
                 // 注意：因为你换图片头像了，所以下面这行首字母的代码去掉了
                 document.getElementById("displayQuota").innerText = data.token_quota || 0;
