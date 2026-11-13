@@ -31,28 +31,20 @@
         .glass-box {
             position: relative; z-index: 10;
             width: 400px; max-width: 90%; padding: 50px 40px;
-            
-            /* 1. 改成极淡的透明白，而不是深灰色，这才是玻璃的本色 */
             background: rgba(255, 255, 255, 0.08);
-            
-            /* 2. 高饱和度毛玻璃 */
             backdrop-filter: blur(25px) saturate(180%); 
             -webkit-backdrop-filter: blur(25px) saturate(180%);
-            
-            /* 3. 边框和阴影：模拟真实光线的折射与漫反射 */
             border: 1px solid transparent;
             background-clip: padding-box;
             box-shadow: 
-                inset 0 1px 1px rgba(255, 255, 255, 0.4), /* 顶部高光 */
-                inset 0 -1px 1px rgba(0, 0, 0, 0.2),        /* 底部暗角 */
-                0 30px 60px rgba(0, 0, 0, 0.5),             /* 深色投影 */
-                0 0 0 1px rgba(255, 255, 255, 0.05);        /* 微光描边 */
-                
+                inset 0 1px 1px rgba(255, 255, 255, 0.4),
+                inset 0 -1px 1px rgba(0, 0, 0, 0.2),
+                0 30px 60px rgba(0, 0, 0, 0.5),
+                0 0 0 1px rgba(255, 255, 255, 0.05);
             border-radius: 28px;
             overflow: hidden;
         }
 
-        /* 增加一道斜向的光泽，让玻璃更通透 */
         .glass-box::before {
             content: '';
             position: absolute;
@@ -61,6 +53,7 @@
             pointer-events: none;
             z-index: -1;
         }
+
         .tabs { display: flex; justify-content: center; gap: 40px; margin-bottom: 30px; }
         .tabs span { color: #888; font-size: 16px; font-weight: 600; cursor: pointer; transition: 0.3s; position: relative; padding-bottom: 5px; }
         .tabs span.active { color: #fff; }
@@ -71,140 +64,47 @@
         .form.active { opacity: 1; visibility: visible; transform: translateX(0); }
 
         .input-group { position: relative; margin-bottom: 20px; z-index: 1; }
-        
         .input-group i { position: absolute; left: 18px; top: 50%; transform: translateY(-50%); color: #666; font-size: 15px; transition: 0.3s;}
         
         .input-group input { 
             width: 100%; padding: 16px 16px 16px 48px; 
-            /* 半透明白色，带一点毛玻璃背景 */
             background: rgba(255, 255, 255, 0.75); 
             border: 1px solid rgba(255, 255, 255, 0.5); 
             border-radius: 14px; 
-            color: #000; 
-            font-size: 15px; 
-            outline: none; 
-            transition: 0.3s; 
-            /* 增加一点内阴影，让输入框看起来是凹进去的 */
+            color: #000; font-size: 15px; outline: none; transition: 0.3s; 
             box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
             backdrop-filter: blur(10px);
         }
         
         .input-group input::placeholder { color: #666; }
-        
         .input-group input:focus { 
             background: rgba(255, 255, 255, 0.95); 
             border-color: rgba(0, 210, 255, 0.8); 
             box-shadow: 0 0 15px rgba(0, 210, 255, 0.3), inset 0 2px 4px rgba(0,0,0,0.05); 
         }
-        
         .input-group input:focus + i { color: #000; }
 
-        /* ================= 按钮样式区 ================= */
-        .btn { 
-            width: 100%; 
-            padding: 16px; 
-            border-radius: 14px; 
-            border: none; 
-            font-size: 15px; 
-            font-weight: 600; 
-            cursor: pointer; 
-            transition: 0.3s; 
-            margin-top: 10px; 
-        }
-        
-        .btn-login {
-            position: relative;
-            background: #fff; 
-            color: #000; 
-            box-shadow: 0 0 20px rgba(255,255,255,0.2);
-            overflow: hidden;
-            z-index: 1;
-        }
-        
-        .btn-login:hover { 
-            transform: translateY(-2px); 
-            box-shadow: 0 0 30px rgba(255,255,255,0.4); 
-        }
-
-        .btn-login.loading {
-            pointer-events: none;
-            color: #555;
-            box-shadow: 0 0 15px rgba(0, 210, 255, 0.3);
-        }
-
+        .btn { width: 100%; padding: 16px; border-radius: 14px; border: none; font-size: 15px; font-weight: 600; cursor: pointer; transition: 0.3s; margin-top: 10px; }
+        .btn-login { position: relative; background: #fff; color: #000; box-shadow: 0 0 20px rgba(255,255,255,0.2); overflow: hidden; z-index: 1; }
+        .btn-login:hover { transform: translateY(-2px); box-shadow: 0 0 30px rgba(255,255,255,0.4); }
+        .btn-login.loading { pointer-events: none; color: #555; box-shadow: 0 0 15px rgba(0, 210, 255, 0.3); }
         .btn-login.loading::before {
-            content: '';
-            position: absolute;
-            top: 0; left: -100%; 
-            width: 100%; height: 100%;
+            content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%;
             background: linear-gradient(90deg, transparent, rgba(0, 210, 255, 0.6), transparent);
-            animation: internal-sweep 1.2s infinite linear;
-            z-index: -1;
+            animation: internal-sweep 1.2s infinite linear; z-index: -1;
         }
+        @keyframes internal-sweep { 0% { left: -100%; } 100% { left: 100%; } }
 
-        @keyframes internal-sweep {
-            0% { left: -100%; }
-            100% { left: 100%; }
-        }
-
-        /* ================= 高级液态玻璃 Toast ================= */
         .toast {
-            position: fixed;
-            top: 40px;
-            left: 50%;
-            /* 初始状态：稍微偏上，透明 */
-            transform: translate(-50%, -30px);
-            padding: 14px 32px;
-            border-radius: 18px; /* 更圆润的边角 */
-            
-            /* 高级感：底色深一点，不要太透，保证文字清晰 */
-            background: rgba(22, 22, 26, 0.88);
-            backdrop-filter: blur(30px) saturate(150%);
-            -webkit-backdrop-filter: blur(30px) saturate(150%);
-            
-            /* 微光边框和内阴影，营造厚度 */
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            box-shadow: 
-                inset 0 0 12px rgba(255, 255, 255, 0.05),
-                0 20px 40px rgba(0, 0, 0, 0.6);
-            
-            color: #fff;
-            font-size: 14px;
-            font-weight: 500;
-            letter-spacing: 0.5px;
-            z-index: 99999;
-            
-            /* 缓慢弹出动画：easeOutExpo 曲线，起步快，结尾极慢，非常高级 */
-            transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-            opacity: 0;
-            pointer-events: none;
-            text-align: center;
-            max-width: 80%;
+            position: fixed; top: 40px; left: 50%; transform: translate(-50%, -30px); padding: 14px 32px; border-radius: 18px;
+            background: rgba(22, 22, 26, 0.88); backdrop-filter: blur(30px) saturate(150%); -webkit-backdrop-filter: blur(30px) saturate(150%);
+            border: 1px solid rgba(255, 255, 255, 0.08); box-shadow: inset 0 0 12px rgba(255, 255, 255, 0.05), 0 20px 40px rgba(0, 0, 0, 0.6);
+            color: #fff; font-size: 14px; font-weight: 500; letter-spacing: 0.5px; z-index: 99999;
+            transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1); opacity: 0; pointer-events: none; text-align: center; max-width: 80%;
         }
-        
-        /* 弹出后的最终状态 */
-        .toast.show {
-            transform: translate(-50%, 0);
-            opacity: 1;
-        }
-        
-        /* 失败状态：暗红色微光 */
-        .toast.error {
-            border-color: rgba(255, 100, 100, 0.25);
-            box-shadow: 
-                inset 0 0 15px rgba(255, 50, 50, 0.1),
-                0 20px 40px rgba(255, 0, 0, 0.15);
-            color: #ffeded;
-        }
-        
-        /* 成功状态：暗绿色微光 */
-        .toast.success {
-            border-color: rgba(100, 255, 150, 0.25);
-            box-shadow: 
-                inset 0 0 15px rgba(50, 255, 100, 0.1),
-                0 20px 40px rgba(0, 255, 100, 0.15);
-            color: #edffed;
-        }
+        .toast.show { transform: translate(-50%, 0); opacity: 1; }
+        .toast.error { border-color: rgba(255, 100, 100, 0.25); box-shadow: inset 0 0 15px rgba(255, 50, 50, 0.1), 0 20px 40px rgba(255, 0, 0, 0.15); color: #ffeded; }
+        .toast.success { border-color: rgba(100, 255, 150, 0.25); box-shadow: inset 0 0 15px rgba(50, 255, 100, 0.1), 0 20px 40px rgba(0, 255, 100, 0.15); color: #edffed; }
     </style>
 </head>
 <body>
@@ -219,34 +119,16 @@
 
         <div class="form-wrapper">
             <div id="form-login" class="form active">
-                <div class="input-group">
-                    <i class="fas fa-user"></i>
-                    <input type="text" id="loginUser" placeholder="授权账号">
-                </div>
-                <div class="input-group">
-                    <i class="fas fa-lock"></i>
-                    <input type="password" id="loginPass" placeholder="安全密钥">
-                </div>
+                <div class="input-group"><i class="fas fa-user"></i><input type="text" id="loginUser" placeholder="授权账号"></div>
+                <div class="input-group"><i class="fas fa-lock"></i><input type="password" id="loginPass" placeholder="安全密钥"></div>
                 <button class="btn btn-login" id="loginBtn" onclick="doLogin()">登录</button>
             </div>
 
             <div id="form-register" class="form">
-                <div class="input-group">
-                    <i class="fas fa-id-card"></i>
-                    <input type="text" id="regUser" placeholder="设置授权账号">
-                </div>
-                <div class="input-group">
-                    <i class="fas fa-ticket-alt"></i>
-                    <input type="text" id="regCard" placeholder="输入卡密 (如 TEST-1234)">
-                </div>
-                <div class="input-group">
-                    <i class="fab fa-qq"></i>
-                    <input type="text" id="regQQ" placeholder="绑定 QQ 账号">
-                </div>
-                <div class="input-group">
-                    <i class="fas fa-key"></i>
-                    <input type="password" id="regPass" placeholder="设置安全密钥">
-                </div>
+                <div class="input-group"><i class="fas fa-id-card"></i><input type="text" id="regUser" placeholder="设置授权账号"></div>
+                <div class="input-group"><i class="fas fa-ticket-alt"></i><input type="text" id="regCard" placeholder="输入卡密 (如 TEST-1234)"></div>
+                <div class="input-group"><i class="fab fa-qq"></i><input type="text" id="regQQ" placeholder="绑定 QQ 账号"></div>
+                <div class="input-group"><i class="fas fa-key"></i><input type="password" id="regPass" placeholder="设置安全密钥"></div>
                 <button class="btn btn-login" id="registerBtn" onclick="doRegister()">激活设备</button>
             </div>
         </div>
@@ -255,9 +137,10 @@
     <script>
         const SUPABASE_URL = 'https://ifrlrkjmqheivdlainur.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_4-FnUR-78EsCyJk_jyQGYA_Hk0Yr5WJ';
-        const myDB = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        // 👇 已经帮你填好了公网穿透地址（注意别漏掉 https:// 和后面的斜杠）
+        const BRIDGE_URL = 'https://win-89femib8f7u.taile20ca4.ts.net';
 
-        // ================= 核心：自动生成和获取设备码 =================
         function getDeviceFingerprint() {
             let fp = localStorage.getItem("device_fp");
             if (!fp) {
@@ -267,27 +150,17 @@
             return fp;
         }
         const DEVICE_FP = getDeviceFingerprint();
-        // ==========================================================
 
-        // 高级弹窗提示函数
         function showToast(msg, type = 'error') {
             const toast = document.getElementById('toast');
-            toast.innerText = msg;
-            toast.className = 'toast show ' + type;
-            
-            // 3秒后缓慢收回
+            toast.innerText = msg; toast.className = 'toast show ' + type;
             clearTimeout(window.toastTimer);
-            window.toastTimer = setTimeout(() => {
-                toast.classList.remove('show');
-            }, 4000); // 稍微延长到4秒，让用户看清提示
+            window.toastTimer = setTimeout(() => { toast.classList.remove('show'); }, 4000);
         }
 
         function switchTab(type) {
-            const tabLogin = document.getElementById('tab-login');
-            const tabRegister = document.getElementById('tab-register');
-            const formLogin = document.getElementById('form-login');
-            const formRegister = document.getElementById('form-register');
-
+            const tabLogin = document.getElementById('tab-login'), tabRegister = document.getElementById('tab-register');
+            const formLogin = document.getElementById('form-login'), formRegister = document.getElementById('form-register');
             if (type === 'login') {
                 tabLogin.classList.add('active'); tabRegister.classList.remove('active');
                 formLogin.classList.add('active'); formRegister.classList.remove('active');
@@ -304,38 +177,25 @@
 
             const btn = document.getElementById('loginBtn'); 
             const oldText = btn.innerText;
-            btn.classList.add('loading');
-            btn.innerText = "验证中...";
+            btn.classList.add('loading'); btn.innerText = "验证中...";
 
             try {
                 const response = await fetch(`${SUPABASE_URL}/functions/v1/verify-login`, {
                     method: 'POST',
-                    headers: { 
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
-                    },
-                    // 👇 登录时带上设备码
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` },
                     body: JSON.stringify({ username: username, password: password, device_fp: DEVICE_FP })
                 });
                 const result = await response.json();
 
-                // 如果后端返回失败
-                if (!result.success) { 
-                    showToast(result.message || "账号或密码错误！", "error"); 
-                    return; 
-                }
+                if (!result.success) { showToast(result.message || "账号或密码错误！", "error"); return; }
                 
-                // 登录成功
                 showToast("登录成功，正在跳转...", "success");
                 localStorage.setItem("momo_user", username);
-                // 延迟 1 秒跳转，让用户看清成功提示
                 setTimeout(() => { window.location.href = 'profile.html'; }, 1000);
             } catch (err) { 
-                // 捕获网络错误或代码错误
                 showToast("网络请求失败！", "error"); 
             } finally {
-                btn.classList.remove('loading');
-                btn.innerText = oldText;
+                btn.classList.remove('loading'); btn.innerText = oldText;
             }
         }
 
@@ -350,7 +210,6 @@
             const formRegister = document.getElementById('form-register');
             const originalHTML = formRegister.innerHTML; 
             
-            // 👇 验证码等待界面
             formRegister.innerHTML = `
                 <div style="text-align: center; padding: 10px 0;">
                     <p style="color: #fff; margin-bottom: 15px; font-size: 15px;">请前往 QQ 群发送以下指令：</p>
@@ -381,8 +240,8 @@
                 }
 
                 try {
-                    // 请求本地桥梁
-                    const bridgeRes = await fetch("https://win-89femib8f7u.taile20ca4.ts.net"/get_pending");
+                    // 👇 使用公网地址请求
+                    const bridgeRes = await fetch(`${BRIDGE_URL}/get_pending`);
                     const pendingData = await bridgeRes.json();
                     
                     if (pendingData[bindCode]) {
@@ -391,11 +250,7 @@
 
                         const response = await fetch(`${SUPABASE_URL}/functions/v1/verify-register`, {
                             method: 'POST',
-                            headers: { 
-                                'Content-Type': 'application/json',
-                                'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
-                            },
-                            // 👇 注册时把设备码一起传过去
+                            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` },
                             body: JSON.stringify({ username, card, qq, password, device_fp: DEVICE_FP })
                         });
                         const result = await response.json();
@@ -409,7 +264,8 @@
                         
                         // 清理本地记录
                         try {
-                            await fetch("https://win-89femib8f7u.taile20ca4.ts.net"/clear_synced", {
+                            // 👇 使用公网地址请求
+                            await fetch(`${BRIDGE_URL}/clear_synced`, {
                                 method: 'POST', headers: { 'Content-Type': 'application/json' },
                                 body: JSON.stringify({ codes: [bindCode] })
                             });
@@ -423,9 +279,7 @@
                         formRegister.innerHTML = originalHTML;
                         document.getElementById('registerBtn').onclick = doRegister;
                     }
-                } catch (err) {
-                    // 静默等待本地服务启动
-                }
+                } catch (err) {}
             }, 2000);
         }
     </script>
