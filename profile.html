@@ -276,16 +276,56 @@
             if(audio.duration) audio.currentTime = percent * audio.duration;
         }
 
-                window.onload = async function() {
+                       window.onload = async function() {
             const currentUsername = localStorage.getItem("momo_user");
             if (!currentUsername) { window.location.href = 'index.html'; return; }
             
             try {
-                const { data, error } = await myDB.from('cards').select('*').eq('username', currentUsername).single();
-                if (error || !data) {
+                // 👇 改为请求我们刚写的安全后端
+                const response = await fetch('https://ifrlrkjmqheivdlainur.supabase.co/functions/v1/get-profile', {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer sb_publishable_4-FnUR-78EsCyJk_jyQGYA_Hk0Yr5WJ'
+                    },
+                    body: JSON.stringify({ username: currentUsername })
+                });
+                
+                const result = await response.json();
+                
+                if (!result.success || !result.data) {
                     document.getElementById("displayName").innerText = "获取数据失败";
                     return;
                 }
+
+                const data = result.data;
+                
+                document.getElementById("displayName").innerText = data.username;
+                document.getElementById("displayQuota").innerText = data.token_quota || 0;
+                document.getElementById("displayQQ").innerText = data.qq || "未绑定";
+                document.getElementById("displayExpire").innerText = data.expiry_date;
+                currentCardKey = data.card_key;
+                document.getElementById("displayCard").innerText = data.card_key;
+
+                // 显示验证码
+                let currentBindCode = data.bind_code || "暂无验证码";
+                const btnGroup = document.querySelector('.btn-group');
+                const codeDiv = document.createElement('div');
+                codeDiv.className = 'detail-row'; 
+                codeDiv.style.marginTop = '15px';
+                codeDiv.innerHTML = `
+                    <span class="detail-label">进群验证码：</span>
+                    <div class="detail-val-box">
+                        <span class="data-value" style="color: #00d2ff; font-size: 18px; font-weight: bold;">/bind ${currentBindCode}</span>
+                    </div>
+                `;
+                btnGroup.parentNode.insertBefore(codeDiv, btnGroup);
+
+            } catch (e) { 
+                console.error(e); 
+                document.getElementById("displayName").innerText = "网络请求失败";
+            }
+        };
                 document.getElementById("displayName").innerText = data.username;
                 document.getElementById("displayQuota").innerText = data.token_quota || 0;
                 document.getElementById("displayQQ").innerText = data.qq || "未绑定";
