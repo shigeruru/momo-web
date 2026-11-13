@@ -1,62 +1,253 @@
-、<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>系统接入 - 授权中心</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;500;700&family=Playfair+Display:ital,wght@0,600;1,600&display=swap" rel="stylesheet">
+    
+    <script src="https://fastly.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
-        body { background-color: #050505; height: 100vh; display: flex; justify-content: center; align-items: center; overflow: hidden; position: relative; }
-        body::before { content: ''; position: absolute; inset: 0; background: radial-gradient(circle at center, transparent 0%, rgba(0,0,0,0.6) 100%); z-index: 0; }
         
-        .glass-box { position: relative; z-index: 10; width: 400px; max-width: 90%; padding: 50px 40px; background: rgba(255, 255, 255, 0.08); backdrop-filter: blur(25px) saturate(180%); -webkit-backdrop-filter: blur(25px) saturate(180%); border: 1px solid transparent; background-clip: padding-box; box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.4), 0 30px 60px rgba(0, 0, 0, 0.5); border-radius: 28px; overflow: hidden; }
-        
+        body {
+            background-image: url('bg.jpg');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            background-color: #050505;
+            height: 100vh; display: flex; justify-content: center; align-items: center;
+            overflow: hidden; position: relative;
+        }
+
+        body::before {
+            content: ''; position: absolute; inset: 0;
+            background: radial-gradient(circle at center, transparent 0%, rgba(0,0,0,0.6) 100%);
+            z-index: 0;
+        }
+
+        .glass-box {
+            position: relative; z-index: 10;
+            width: 400px; max-width: 90%; padding: 50px 40px;
+            
+            /* 1. 改成极淡的透明白，而不是深灰色，这才是玻璃的本色 */
+            background: rgba(255, 255, 255, 0.08);
+            
+            /* 2. 高饱和度毛玻璃 */
+            backdrop-filter: blur(25px) saturate(180%); 
+            -webkit-backdrop-filter: blur(25px) saturate(180%);
+            
+            /* 3. 边框和阴影：模拟真实光线的折射与漫反射 */
+            border: 1px solid transparent;
+            background-clip: padding-box;
+            box-shadow: 
+                inset 0 1px 1px rgba(255, 255, 255, 0.4), /* 顶部高光 */
+                inset 0 -1px 1px rgba(0, 0, 0, 0.2),        /* 底部暗角 */
+                0 30px 60px rgba(0, 0, 0, 0.5),             /* 深色投影 */
+                0 0 0 1px rgba(255, 255, 255, 0.05);        /* 微光描边 */
+                
+            border-radius: 28px;
+            overflow: hidden;
+        }
+
+        /* 增加一道斜向的光泽，让玻璃更通透 */
+        .glass-box::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0) 40%);
+            pointer-events: none;
+            z-index: -1;
+        }
         .tabs { display: flex; justify-content: center; gap: 40px; margin-bottom: 30px; }
         .tabs span { color: #888; font-size: 16px; font-weight: 600; cursor: pointer; transition: 0.3s; position: relative; padding-bottom: 5px; }
         .tabs span.active { color: #fff; }
         .tabs span.active::after { content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 2px; background: #fff; border-radius: 2px; box-shadow: 0 0 10px #fff; }
-        
+
         .form-wrapper { position: relative; min-height: 320px; }
         .form { position: absolute; width: 100%; top: 0; left: 0; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); opacity: 0; visibility: hidden; transform: translateX(30px); }
         .form.active { opacity: 1; visibility: visible; transform: translateX(0); }
-        
+
         .input-group { position: relative; margin-bottom: 20px; z-index: 1; }
-        .input-group i { position: absolute; left: 18px; top: 50%; transform: translateY(-50%); color: #666; font-size: 15px; }
-        .input-group input { width: 100%; padding: 16px 16px 16px 48px; background: rgba(255, 255, 255, 0.75); border: 1px solid rgba(255, 255, 255, 0.5); border-radius: 14px; color: #000; font-size: 15px; outline: none; transition: 0.3s; }
-        .input-group input:focus { background: rgba(255, 255, 255, 0.95); border-color: rgba(0, 210, 255, 0.8); box-shadow: 0 0 15px rgba(0, 210, 255, 0.3); }
         
-        .btn { width: 100%; padding: 16px; border-radius: 14px; border: none; font-size: 15px; font-weight: 600; cursor: pointer; transition: 0.3s; margin-top: 10px; background: #fff; color: #000; }
-        .btn:hover { transform: translateY(-2px); box-shadow: 0 0 30px rgba(255,255,255,0.4); }
-        .btn.loading { pointer-events: none; color: #555; }
+        .input-group i { position: absolute; left: 18px; top: 50%; transform: translateY(-50%); color: #666; font-size: 15px; transition: 0.3s;}
         
-        .toast { position: fixed; top: 40px; left: 50%; transform: translate(-50%, -30px); padding: 14px 32px; border-radius: 18px; background: rgba(22, 22, 26, 0.88); backdrop-filter: blur(30px); color: #fff; z-index: 99999; transition: all 0.6s; opacity: 0; pointer-events: none; text-align: center; }
-        .toast.show { transform: translate(-50%, 0); opacity: 1; }
-        .toast.error { border: 1px solid rgba(255, 100, 100, 0.5); color: #ffeded; }
-        .toast.success { border: 1px solid rgba(100, 255, 150, 0.5); color: #edffed; }
+        .input-group input { 
+            width: 100%; padding: 16px 16px 16px 48px; 
+            /* 半透明白色，带一点毛玻璃背景 */
+            background: rgba(255, 255, 255, 0.75); 
+            border: 1px solid rgba(255, 255, 255, 0.5); 
+            border-radius: 14px; 
+            color: #000; 
+            font-size: 15px; 
+            outline: none; 
+            transition: 0.3s; 
+            /* 增加一点内阴影，让输入框看起来是凹进去的 */
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+            backdrop-filter: blur(10px);
+        }
+        
+        .input-group input::placeholder { color: #666; }
+        
+        .input-group input:focus { 
+            background: rgba(255, 255, 255, 0.95); 
+            border-color: rgba(0, 210, 255, 0.8); 
+            box-shadow: 0 0 15px rgba(0, 210, 255, 0.3), inset 0 2px 4px rgba(0,0,0,0.05); 
+        }
+        
+        .input-group input:focus + i { color: #000; }
+
+        /* ================= 按钮样式区 ================= */
+        .btn { 
+            width: 100%; 
+            padding: 16px; 
+            border-radius: 14px; 
+            border: none; 
+            font-size: 15px; 
+            font-weight: 600; 
+            cursor: pointer; 
+            transition: 0.3s; 
+            margin-top: 10px; 
+        }
+        
+        .btn-login {
+            position: relative;
+            background: #fff; 
+            color: #000; 
+            box-shadow: 0 0 20px rgba(255,255,255,0.2);
+            overflow: hidden;
+            z-index: 1;
+        }
+        
+        .btn-login:hover { 
+            transform: translateY(-2px); 
+            box-shadow: 0 0 30px rgba(255,255,255,0.4); 
+        }
+
+        .btn-login.loading {
+            pointer-events: none;
+            color: #555;
+            box-shadow: 0 0 15px rgba(0, 210, 255, 0.3);
+        }
+
+        .btn-login.loading::before {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%; 
+            width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 210, 255, 0.6), transparent);
+            animation: internal-sweep 1.2s infinite linear;
+            z-index: -1;
+        }
+
+        @keyframes internal-sweep {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+
+        /* ================= 高级液态玻璃 Toast ================= */
+        .toast {
+            position: fixed;
+            top: 40px;
+            left: 50%;
+            /* 初始状态：稍微偏上，透明 */
+            transform: translate(-50%, -30px);
+            padding: 14px 32px;
+            border-radius: 18px; /* 更圆润的边角 */
+            
+            /* 高级感：底色深一点，不要太透，保证文字清晰 */
+            background: rgba(22, 22, 26, 0.88);
+            backdrop-filter: blur(30px) saturate(150%);
+            -webkit-backdrop-filter: blur(30px) saturate(150%);
+            
+            /* 微光边框和内阴影，营造厚度 */
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 
+                inset 0 0 12px rgba(255, 255, 255, 0.05),
+                0 20px 40px rgba(0, 0, 0, 0.6);
+            
+            color: #fff;
+            font-size: 14px;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            z-index: 99999;
+            
+            /* 缓慢弹出动画：easeOutExpo 曲线，起步快，结尾极慢，非常高级 */
+            transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+            opacity: 0;
+            pointer-events: none;
+            text-align: center;
+            max-width: 80%;
+        }
+        
+        /* 弹出后的最终状态 */
+        .toast.show {
+            transform: translate(-50%, 0);
+            opacity: 1;
+        }
+        
+        /* 失败状态：暗红色微光 */
+        .toast.error {
+            border-color: rgba(255, 100, 100, 0.25);
+            box-shadow: 
+                inset 0 0 15px rgba(255, 50, 50, 0.1),
+                0 20px 40px rgba(255, 0, 0, 0.15);
+            color: #ffeded;
+        }
+        
+        /* 成功状态：暗绿色微光 */
+        .toast.success {
+            border-color: rgba(100, 255, 150, 0.25);
+            box-shadow: 
+                inset 0 0 15px rgba(50, 255, 100, 0.1),
+                0 20px 40px rgba(0, 255, 100, 0.15);
+            color: #edffed;
+        }
     </style>
 </head>
 <body>
+
     <div id="toast" class="toast">提示信息</div>
+
     <div class="glass-box">
         <div class="tabs">
             <span id="tab-login" class="active" onclick="switchTab('login')">登录</span>
             <span id="tab-register" onclick="switchTab('register')">激活</span>
         </div>
+
         <div class="form-wrapper">
             <div id="form-login" class="form active">
-                <div class="input-group"><i class="fas fa-user"></i><input type="text" id="loginUser" placeholder="授权账号"></div>
-                <div class="input-group"><i class="fas fa-lock"></i><input type="password" id="loginPass" placeholder="安全密钥"></div>
-                <button class="btn" id="loginBtn" onclick="doLogin()">登录</button>
+                <div class="input-group">
+                    <i class="fas fa-user"></i>
+                    <input type="text" id="loginUser" placeholder="授权账号">
+                </div>
+                <div class="input-group">
+                    <i class="fas fa-lock"></i>
+                    <input type="password" id="loginPass" placeholder="安全密钥">
+                </div>
+                <button class="btn btn-login" id="loginBtn" onclick="doLogin()">登录</button>
             </div>
-            
+
             <div id="form-register" class="form">
-                <div class="input-group"><i class="fas fa-id-card"></i><input type="text" id="regUser" placeholder="设置授权账号"></div>
-                <div class="input-group"><i class="fas fa-ticket-alt"></i><input type="text" id="regCard" placeholder="输入卡密"></div>
-                <div class="input-group"><i class="fab fa-qq"></i><input type="text" id="regQQ" placeholder="绑定 QQ 账号"></div>
-                <div class="input-group"><i class="fas fa-key"></i><input type="password" id="regPass" placeholder="设置安全密钥"></div>
-                <button class="btn" id="registerBtn" onclick="doRegister()">激活设备</button>
+                <div class="input-group">
+                    <i class="fas fa-id-card"></i>
+                    <input type="text" id="regUser" placeholder="设置授权账号">
+                </div>
+                <div class="input-group">
+                    <i class="fas fa-ticket-alt"></i>
+                    <input type="text" id="regCard" placeholder="输入卡密 (如 TEST-1234)">
+                </div>
+                <div class="input-group">
+                    <i class="fab fa-qq"></i>
+                    <input type="text" id="regQQ" placeholder="绑定 QQ 账号">
+                </div>
+                <div class="input-group">
+                    <i class="fas fa-key"></i>
+                    <input type="password" id="regPass" placeholder="设置安全密钥">
+                </div>
+                <button class="btn btn-login" id="registerBtn" onclick="doRegister()">激活设备</button>
             </div>
         </div>
     </div>
@@ -64,31 +255,39 @@
     <script>
         const SUPABASE_URL = 'https://ifrlrkjmqheivdlainur.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_4-FnUR-78EsCyJk_jyQGYA_Hk0Yr5WJ';
-        
+        const myDB = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
         // ================= 核心：自动生成和获取设备码 =================
         function getDeviceFingerprint() {
             let fp = localStorage.getItem("device_fp");
             if (!fp) {
-                // 如果没有，生成一个 12 位专属码
                 fp = Array.from({length: 12}, () => "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"[Math.floor(Math.random() * 36)]).join('');
                 localStorage.setItem("device_fp", fp);
             }
             return fp;
         }
-        // 页面一加载就初始化设备码
         const DEVICE_FP = getDeviceFingerprint();
         // ==========================================================
 
+        // 高级弹窗提示函数
         function showToast(msg, type = 'error') {
             const toast = document.getElementById('toast');
-            toast.innerText = msg; toast.className = 'toast show ' + type;
+            toast.innerText = msg;
+            toast.className = 'toast show ' + type;
+            
+            // 3秒后缓慢收回
             clearTimeout(window.toastTimer);
-            window.toastTimer = setTimeout(() => { toast.classList.remove('show'); }, 4000);
+            window.toastTimer = setTimeout(() => {
+                toast.classList.remove('show');
+            }, 4000); // 稍微延长到4秒，让用户看清提示
         }
 
         function switchTab(type) {
-            const tabLogin = document.getElementById('tab-login'), tabRegister = document.getElementById('tab-register');
-            const formLogin = document.getElementById('form-login'), formRegister = document.getElementById('form-register');
+            const tabLogin = document.getElementById('tab-login');
+            const tabRegister = document.getElementById('tab-register');
+            const formLogin = document.getElementById('form-login');
+            const formRegister = document.getElementById('form-register');
+
             if (type === 'login') {
                 tabLogin.classList.add('active'); tabRegister.classList.remove('active');
                 formLogin.classList.add('active'); formRegister.classList.remove('active');
@@ -102,25 +301,42 @@
             const username = document.getElementById('loginUser').value;
             const password = document.getElementById('loginPass').value;
             if(!username || !password) return showToast("请输入账号和密码！", "error");
-            
+
             const btn = document.getElementById('loginBtn'); 
-            btn.classList.add('loading'); btn.innerText = "验证中...";
-            
+            const oldText = btn.innerText;
+            btn.classList.add('loading');
+            btn.innerText = "验证中...";
+
             try {
                 const response = await fetch(`${SUPABASE_URL}/functions/v1/verify-login`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` },
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+                    },
                     // 👇 登录时带上设备码
-                    body: JSON.stringify({ username, password, device_fp: DEVICE_FP })
+                    body: JSON.stringify({ username: username, password: password, device_fp: DEVICE_FP })
                 });
                 const result = await response.json();
+
+                // 如果后端返回失败
+                if (!result.success) { 
+                    showToast(result.message || "账号或密码错误！", "error"); 
+                    return; 
+                }
                 
-                if (!result.success) { showToast(result.message || "账号或密码错误！", "error"); return; }
-                
+                // 登录成功
                 showToast("登录成功，正在跳转...", "success");
                 localStorage.setItem("momo_user", username);
+                // 延迟 1 秒跳转，让用户看清成功提示
                 setTimeout(() => { window.location.href = 'profile.html'; }, 1000);
-            } catch (err) { showToast("网络请求失败！", "error"); } finally { btn.classList.remove('loading'); btn.innerText = "登录"; }
+            } catch (err) { 
+                // 捕获网络错误或代码错误
+                showToast("网络请求失败！", "error"); 
+            } finally {
+                btn.classList.remove('loading');
+                btn.innerText = oldText;
+            }
         }
 
         async function doRegister() {
@@ -134,21 +350,24 @@
             const formRegister = document.getElementById('form-register');
             const originalHTML = formRegister.innerHTML; 
             
+            // 👇 验证码等待界面
             formRegister.innerHTML = `
                 <div style="text-align: center; padding: 10px 0;">
                     <p style="color: #fff; margin-bottom: 15px; font-size: 15px;">请前往 QQ 群发送以下指令：</p>
-                    <div id="copyCodeBtn" style="background: rgba(0, 210, 255, 0.15); border: 1px dashed rgba(0, 210, 255, 0.6); padding: 16px; border-radius: 12px; font-size: 22px; font-weight: bold; color: #00d2ff; letter-spacing: 2px; margin-bottom: 15px; cursor: pointer; user-select: none;" title="点击复制">
+                    <div id="copyCodeBtn" style="background: rgba(0, 210, 255, 0.15); border: 1px dashed rgba(0, 210, 255, 0.6); padding: 16px; border-radius: 12px; font-size: 22px; font-weight: bold; color: #00d2ff; letter-spacing: 2px; margin-bottom: 15px; cursor: pointer; user-select: none; box-shadow: 0 0 20px rgba(0, 210, 255, 0.1); transition: 0.3s;" title="点击复制">
                         /bind ${bindCode}
                     </div>
-                    <p style="color: #888; font-size: 12px; margin-bottom: 20px;">发送后请勿关闭此网页，系统会自动激活并绑定设备</p>
+                    <p style="color: #888; font-size: 12px; margin-bottom: 20px;">发送后请勿关闭此网页，系统会自动激活</p>
                     <div style="color: #00d2ff; font-size: 14px; display: flex; align-items: center; justify-content: center; gap: 8px;">
                         <i class="fas fa-spinner fa-spin"></i> 正在等待群内绑定...
                     </div>
                 </div>
             `;
 
-            document.getElementById('copyCodeBtn').onclick = () => {
-                navigator.clipboard.writeText(`/bind ${bindCode}`).then(() => showToast("指令已复制", "success"));
+            document.getElementById('copyCodeBtn').onclick = (e) => {
+                e.target.style.transform = "scale(0.95)";
+                setTimeout(() => e.target.style.transform = "scale(1)", 150);
+                navigator.clipboard.writeText(`/bind ${bindCode}`).then(() => showToast("指令已复制，快去群里发送吧！", "success"));
             };
 
             let pollCount = 0;
@@ -158,20 +377,24 @@
                     clearInterval(pollTimer);
                     formRegister.innerHTML = originalHTML;
                     document.getElementById('registerBtn').onclick = doRegister;
-                    return showToast("超时未检测到绑定", "error");
+                    return showToast("超时未检测到绑定，请重新尝试", "error");
                 }
 
                 try {
+                    // 请求本地桥梁
                     const bridgeRes = await fetch("http://127.0.0.1:8899/get_pending");
                     const pendingData = await bridgeRes.json();
                     
                     if (pendingData[bindCode]) {
                         clearInterval(pollTimer); 
-                        formRegister.innerHTML = `<div style="text-align: center; color: #fff; padding: 40px 0;"><i class="fas fa-circle-notch fa-spin" style="font-size: 30px; color: #00d2ff; margin-bottom: 15px;"></i><p>正在绑定当前设备...</p></div>`;
+                        formRegister.innerHTML = `<div style="text-align: center; color: #fff; padding: 40px 0;"><i class="fas fa-circle-notch fa-spin" style="font-size: 30px; color: #00d2ff; margin-bottom: 15px;"></i><p>检测成功，正在绑定当前设备...</p></div>`;
 
                         const response = await fetch(`${SUPABASE_URL}/functions/v1/verify-register`, {
                             method: 'POST',
-                            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` },
+                            headers: { 
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+                            },
                             // 👇 注册时把设备码一起传过去
                             body: JSON.stringify({ username, card, qq, password, device_fp: DEVICE_FP })
                         });
@@ -184,6 +407,7 @@
                             return; 
                         }
                         
+                        // 清理本地记录
                         try {
                             await fetch("http://127.0.0.1:8899/clear_synced", {
                                 method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -199,7 +423,9 @@
                         formRegister.innerHTML = originalHTML;
                         document.getElementById('registerBtn').onclick = doRegister;
                     }
-                } catch (err) {}
+                } catch (err) {
+                    // 静默等待本地服务启动
+                }
             }, 2000);
         }
     </script>
