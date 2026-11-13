@@ -296,10 +296,14 @@
             btn.innerText = "验证中...";
 
             try {
-                               // 👇 换成请求刚刚部署的安全后端接口
+                                              // 👇 换成请求刚刚部署的安全后端接口
                 const response = await fetch('https://ifrlrkjmqheivdlainur.supabase.co/functions/v1/verify-login', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        // 👇 加上这行通行证，解决 Missing authorization header 报错
+                        'Authorization': 'Bearer sb_publishable_4-FnUR-78EsCyJk_jyQGYA_Hk0Yr5WJ'
+                    },
                     body: JSON.stringify({ username: username, password: password })
                 });
                 const result = await response.json();
