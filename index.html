@@ -328,7 +328,7 @@
             }
         }
 
-        async function doRegister() {
+                async function doRegister() {
             const username = document.getElementById('regUser').value;
             const card = document.getElementById('regCard').value;
             const qq = document.getElementById('regQQ').value;
@@ -336,14 +336,21 @@
             if(!username || !card || !qq || !password) return showToast("请填满所有字段！", "error");
             
             try {
-                const { data: cardData, error: cardErr } = await myDB.from('cards').select('*').eq('card_key', card).eq('is_used', false).single();
-                if (cardErr || !cardData) { showToast("卡密无效、已被使用或不存在！", "error"); return; }
-                
-                const today = new Date().toISOString().split('T')[0];
-                if (cardData.expiry_date < today) { showToast("该卡密已过期！", "error"); return; }
-                
-                const { error: updateErr } = await myDB.from('cards').update({ is_used: true, username: username, password: password, qq: qq }).eq('id', cardData.id);
-                if (updateErr) { showToast("激活失败，数据库写入错误！", "error"); return; }
+                // 请求刚刚部署的激活后端
+                const response = await fetch('https://ifrlrkjmqheivdlainur.supabase.co/functions/v1/verify-register', {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer sb_publishable_4-FnUR-78EsCyJk_jyQGYA_Hk0Yr5WJ'
+                    },
+                    body: JSON.stringify({ username, card, qq, password })
+                });
+                const result = await response.json();
+
+                if (!result.success) { 
+                    showToast(result.message, "error"); 
+                    return; 
+                }
                 
                 showToast("激活成功！请登录。", "success");
                 switchTab('login');
