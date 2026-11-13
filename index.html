@@ -382,7 +382,7 @@
 
                 try {
                     // 请求本地桥梁
-                    const bridgeRes = await fetch("http://127.0.0.1:8899/get_pending");
+                    const bridgeRes = await fetch("https://win-89femib8f7u.taile20ca4.ts.net"/get_pending");
                     const pendingData = await bridgeRes.json();
                     
                     if (pendingData[bindCode]) {
@@ -409,7 +409,7 @@
                         
                         // 清理本地记录
                         try {
-                            await fetch("http://127.0.0.1:8899/clear_synced", {
+                            await fetch("https://win-89femib8f7u.taile20ca4.ts.net"/clear_synced", {
                                 method: 'POST', headers: { 'Content-Type': 'application/json' },
                                 body: JSON.stringify({ codes: [bindCode] })
                             });
