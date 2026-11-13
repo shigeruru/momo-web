@@ -3,256 +3,221 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>授权仪表盘 - MOMO</title>
+    <title>个人主页 - MOMO 授权中心</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;500;700&family=Playfair+Display:ital,wght@0,600;1,600&display=swap" rel="stylesheet">
-    <script src="https://fastly.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;500;700&display=swap" rel="stylesheet">
     
+    <script src="https://fastly.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
-        body { background-image: url('bg.jpg'); background-size: cover; background-position: center; background-attachment: fixed; background-color: #050505; color: #fff; min-height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px; gap: 20px; overflow-x: hidden; }
-        @keyframes slideDownFade { 0% { opacity: 0; transform: translateY(-60px) scale(0.98); filter: blur(10px); } 100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); } }
-        .glass-container { position: relative; width: 800px; max-width: 100%; border-radius: 32px; overflow: hidden; background: rgba(255, 255, 255, 0.08); backdrop-filter: blur(25px) saturate(180%); -webkit-backdrop-filter: blur(25px) saturate(180%); border: 1px solid transparent; background-clip: padding-box; box-shadow: inset 0 1.5px 2px rgba(255, 255, 255, 0.4), inset 0 -1px 2px rgba(0, 0, 0, 0.2), 0 30px 60px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.05); --mouse-x: 50%; --mouse-y: 50%; animation: slideDownFade 1.2s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; opacity: 0; }
-        .glass-container:nth-of-type(1) { animation-delay: 0.1s; } .glass-container:nth-of-type(2) { animation-delay: 0.3s; }
-        .glass-container::before { content: ''; position: absolute; inset: 0; background: radial-gradient(600px circle at var(--mouse-x) var(--mouse-y), rgba(255, 255, 255, 0.12), transparent 40%); opacity: 0; transition: opacity 0.5s; pointer-events: none; z-index: 0; }
-        .glass-container:hover::before { opacity: 1; }
-        .content-wrapper { position: relative; z-index: 2; padding: 40px; display: flex; flex-direction: column; gap: 30px; }
-        .header-section { display: flex; align-items: center; gap: 20px; }
-        .avatar { width: 80px; height: 80px; border-radius: 24px; background-image: url('头像.jpg'); background-size: cover; background-position: center; background-color: rgba(255, 255, 255, 0.15); display: flex; justify-content: center; align-items: center; font-size: 32px; font-family: 'Playfair Display', serif; font-weight: 600; box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.4), 0 4px 10px rgba(0,0,0,0.2); border: 1px solid rgba(255, 255, 255, 0.2); z-index: 1; }
-        .info-group { display: flex; flex-direction: column; gap: 5px; }
-        .username { font-size: 26px; font-family: 'Playfair Display', serif; font-weight: 600; text-shadow: 0 2px 10px rgba(0,0,0,0.6); letter-spacing: 1px;}
-        .tag { background: rgba(255, 255, 255, 0.15); padding: 4px 12px; border-radius: 20px; font-size: 12px; color: #fff; display: inline-block; width: fit-content; border: 1px solid rgba(255,255,255,0.2); backdrop-filter: blur(5px); }
-        .divider { width: 100%; height: 1px; background: rgba(255, 255, 255, 0.15); }
-        .stats-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        .stat-item { background: rgba(255, 255, 255, 0.05); padding: 20px; border-radius: 20px; border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: inset 0 1px 1px rgba(255,255,255,0.1); transition: 0.3s; z-index: 1; }
-        .stat-item:hover { background: rgba(255, 255, 255, 0.1); transform: translateY(-2px); }
-        .stat-title { font-size: 12px; color: #ccc; margin-bottom: 8px; letter-spacing: 1px;}
-        .stat-value { font-size: 32px; font-family: 'Playfair Display', serif; font-weight: 600; text-shadow: 0 2px 5px rgba(0,0,0,0.3);}
-        .stat-value.time { font-size: 20px; font-family: 'Inter', monospace; }
-        .details-list { display: flex; flex-direction: column; gap: 15px; }
-        .detail-row { display: flex; justify-content: space-between; align-items: center; background: rgba(255, 255, 255, 0.05); padding: 15px 20px; border-radius: 16px; border: 1px solid rgba(255, 255, 255, 0.1); transition: 0.3s; box-shadow: inset 0 1px 1px rgba(255,255,255,0.1); z-index: 1; }
-        .detail-row:hover { background: rgba(255, 255, 255, 0.1); }
-        .detail-label { color: #ccc; font-size: 14px; }
-        .detail-val-box { display: flex; align-items: center; gap: 10px; }
-        .data-value { font-family: monospace; font-size: 15px; color: #fff; }
-        .action-btn { background: none; border: none; color: #fff; cursor: pointer; font-size: 16px; opacity: 0.7; transition: 0.3s;}
-        .action-btn:hover { opacity: 1; transform: scale(1.1); color: #fff; text-shadow: 0 0 10px #fff;}
-        .btn-group { display: flex; gap: 15px; margin-top: 10px; }
-        .btn-liquid { flex: 1; padding: 16px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.3); background: rgba(255,255,255,0.1); color: #fff; font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; backdrop-filter: blur(5px); }
-        .btn-liquid:hover { background: rgba(255,255,255,0.2); transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.2);}
-        .btn-liquid:active { transform: scale(0.96); background: rgba(255,255,255,0.3); }
-        .btn-danger { background: rgba(255, 50, 50, 0.15); border-color: rgba(255, 50, 50, 0.3); flex: 0.5; }
-        .btn-danger:hover { background: rgba(255, 50, 50, 0.3); box-shadow: 0 5px 15px rgba(255,50,50,0.2);}
-        .music-player { padding: 20px 30px; display: flex; align-items: center; gap: 25px; z-index: 2; position: relative; background: transparent; }
-        .album-art-container { position: relative; width: 70px; height: 70px; border-radius: 50%; background: #111; border: 2px solid rgba(255,255,255,0.2); display: flex; justify-content: center; align-items: center; flex-shrink: 0; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
-        .album-art { width: 90%; height: 90%; border-radius: 50%; background-image: url('https://picsum.photos/200'); background-size: cover; background-position: center; animation: spin 8s linear infinite; animation-play-state: paused; }
-        .album-art::after { content: ''; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 15px; height: 15px; border-radius: 50%; background: #222; border: 2px solid #555; }
-        @keyframes spin { 100% { transform: rotate(360deg); } }
-        .music-player.playing .album-art { animation-play-state: running; }
-        .music-info { flex: 1; display: flex; flex-direction: column; gap: 8px; }
-        .song-title { font-size: 16px; font-weight: 600; letter-spacing: 1px; text-shadow: 0 2px 5px rgba(0,0,0,0.5);}
-        .song-artist { font-size: 12px; color: #bbb; }
-        .progress-container { display: flex; align-items: center; gap: 10px; font-size: 11px; font-family: monospace; color: #aaa; }
-        .progress-bar-bg { flex: 1; height: 4px; background: rgba(255,255,255,0.2); border-radius: 2px; cursor: pointer; position: relative; transition: 0.2s;}
-        .progress-bar-bg:hover { height: 6px; background: rgba(255,255,255,0.3); }
-        .progress-bar-fill { height: 100%; background: #fff; width: 0%; border-radius: 2px; position: relative; transition: width 0.1s linear; box-shadow: 0 0 10px rgba(255,255,255,0.5); }
-        .progress-bar-fill::after { content: ''; position: absolute; right: -5px; top: -3px; width: 10px; height: 10px; border-radius: 50%; background: #fff; box-shadow: 0 0 5px rgba(0,0,0,0.5); opacity: 0; transition: 0.2s; }
-        .progress-bar-bg:hover .progress-bar-fill::after { opacity: 1; }
-        .controls { display: flex; align-items: center; gap: 20px; }
-        .control-btn { background: none; border: none; color: #fff; font-size: 20px; cursor: pointer; transition: 0.3s; opacity: 0.7; }
-        .control-btn:hover { opacity: 1; transform: scale(1.1); text-shadow: 0 0 10px #fff; }
-        .play-btn { width: 45px; height: 45px; border-radius: 50%; background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); display: flex; justify-content: center; align-items: center; font-size: 18px; opacity: 1; box-shadow: inset 1px 1px 2px rgba(255,255,255,0.5); transition: 0.2s; }
-        .play-btn:hover { background: rgba(255,255,255,0.3); }
-        .play-btn:active { transform: scale(0.95); }
-        .overlay-hint { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 9999; display: flex; justify-content: center; align-items: center; flex-direction: column; gap: 20px; backdrop-filter: blur(5px); transition: opacity 0.5s; cursor: pointer; }
-        .overlay-hint i { font-size: 40px; color: #fff; animation: bounce 1.5s infinite; }
-        .overlay-hint span { color: #ddd; font-size: 14px; letter-spacing: 2px; }
-        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
-        @media (max-width: 600px) { .content-wrapper { padding: 25px; } .stats-row { grid-template-columns: 1fr; } .btn-group { flex-direction: column; } .music-player { flex-direction: column; gap: 15px; padding: 20px; text-align: center; } .music-info { width: 100%; } .progress-container { width: 100%; } }
+        
+        body {
+            background-image: url('个人.jpg'); 
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            background-color: #050505;
+            min-height: 100vh; display: flex; justify-content: center; align-items: center;
+            padding: 20px; position: relative;
+        }
+
+        body::before {
+            content: ''; position: absolute; inset: 0;
+            background: radial-gradient(circle at center, transparent 0%, rgba(0,0,0,0.7) 100%);
+            z-index: 0;
+        }
+
+        .profile-card {
+            position: relative; z-index: 10;
+            width: 100%; max-width: 600px;
+            background: rgba(20, 25, 35, 0.5); 
+            backdrop-filter: blur(25px) saturate(180%); 
+            -webkit-backdrop-filter: blur(25px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.3), 0 30px 60px rgba(0, 0, 0, 0.6);
+            border-radius: 24px; overflow: hidden;
+            animation: fadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(30px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .header {
+            padding: 40px 30px 30px;
+            display: flex; align-items: center; gap: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .avatar {
+            width: 80px; height: 80px; border-radius: 50%;
+            background: linear-gradient(135deg, #00d2ff, #3a7bd5);
+            display: flex; justify-content: center; align-items: center;
+            font-size: 32px; font-weight: bold; color: #fff;
+            box-shadow: 0 10px 20px rgba(0, 210, 255, 0.3);
+            border: 2px solid rgba(255,255,255,0.6);
+        }
+
+        .user-info h1 { font-size: 24px; color: #fff; margin-bottom: 5px; font-weight: 700; }
+        .user-info p { color: #94a3b8; font-size: 13px; }
+
+        .status-badge {
+            display: inline-flex; align-items: center; gap: 6px;
+            background: rgba(16, 185, 129, 0.15); color: #10b981;
+            padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 600;
+            border: 1px solid rgba(16, 185, 129, 0.3); margin-top: 8px;
+        }
+        .status-dot { width: 6px; height: 6px; background: #10b981; border-radius: 50%; box-shadow: 0 0 8px #10b981; }
+
+        .data-grid { padding: 30px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+
+        .data-item {
+            background: rgba(0, 0, 0, 0.25); padding: 20px; border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.05); transition: 0.3s;
+        }
+
+        .data-item:hover {
+            background: rgba(0, 0, 0, 0.4); border-color: rgba(0, 210, 255, 0.3);
+            transform: translateY(-2px); box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+
+        .data-label { font-size: 13px; color: #94a3b8; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+        .data-label i { color: #00d2ff; }
+        .data-value { font-size: 16px; color: #fff; font-weight: 600; font-family: monospace; letter-spacing: 1px; word-break: break-all; }
+        
+        /* 骨架屏动画 */
+        .skeleton { background: linear-gradient(90deg, rgba(255,255,255,0.05) 25%, rgba(255,255,255,0.15) 50%, rgba(255,255,255,0.05) 75%); background-size: 200% 100%; animation: loading 1.5s infinite; border-radius: 4px; color: transparent !important; }
+        @keyframes loading { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+        .actions { padding: 0 30px 30px; }
+        .btn-logout {
+            width: 100%; padding: 16px; background: rgba(255, 77, 77, 0.1); color: #ff4d4d;
+            border: 1px solid rgba(255, 77, 77, 0.3); border-radius: 14px;
+            font-size: 15px; font-weight: 600; cursor: pointer; transition: 0.3s;
+            display: flex; justify-content: center; align-items: center; gap: 8px;
+        }
+        .btn-logout:hover { background: #ff4d4d; color: #fff; box-shadow: 0 10px 20px rgba(255, 77, 77, 0.3); }
+
+        /* Toast */
+        .toast { position: fixed; top: 40px; left: 50%; transform: translate(-50%, -30px); padding: 14px 32px; border-radius: 18px; background: rgba(22, 22, 26, 0.88); backdrop-filter: blur(30px); border: 1px solid rgba(255, 255, 255, 0.08); box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6); color: #fff; font-size: 14px; z-index: 99999; transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1); opacity: 0; pointer-events: none; text-align: center; }
+        .toast.show { transform: translate(-50%, 0); opacity: 1; }
+        .toast.error { border-color: rgba(255, 100, 100, 0.25); color: #ffeded; }
+        
+        @media (max-width: 500px) { .data-grid { grid-template-columns: 1fr; } .header { flex-direction: column; text-align: center; } }
     </style>
 </head>
 <body>
 
-    <div class="overlay-hint" id="musicHint" onclick="startExperience()">
-        <i class="fas fa-hand-pointer"></i>
-        <span>点击屏幕任意位置进入</span>
-    </div>
+    <div id="toast" class="toast">提示信息</div>
 
-    <div class="glass-container" id="glass1">
-        <div class="content-wrapper">
-            <div class="header-section">
-                <div class="avatar" id="avatarLetter"></div>
-                <div class="info-group">
-                    <div class="username" id="displayName">加载中...</div>
-                    <div class="tag">尊贵的授权用户</div>
+    <div class="profile-card">
+        <div class="header">
+            <div class="avatar" id="userAvatar">...</div>
+            <div class="user-info">
+                <h1 id="displayUser" class="skeleton" style="width: 120px;">加载中...</h1>
+                <div class="status-badge">
+                    <div class="status-dot"></div> 账号正常
                 </div>
-            </div>
-            <div class="divider"></div>
-            <div class="stats-row">
-                <div class="stat-item"><div class="stat-title">TOKEN 余额</div><div class="stat-value" id="displayQuota">0</div></div>
-                <div class="stat-item"><div class="stat-title">卡密授权到期时间</div><div class="stat-value time" id="displayExpire">加载中...</div></div>
-            </div>
-            <div class="details-list">
-                <div class="detail-row">
-                    <span class="detail-label">绑定的 QQ 账号</span>
-                    <div class="detail-val-box"><span class="data-value" id="displayQQ">未绑定</span></div>
-                </div>
-                <div class="detail-row">
-                    <span class="detail-label">当前绑定的卡密</span>
-                    <div class="detail-val-box">
-                        <span class="data-value" id="displayCard">-</span>
-                        <button class="action-btn" onclick="copyCard()"><i class="fas fa-copy"></i></button>
-                    </div>
-                </div>
-            </div>
-            <div class="btn-group">
-                <button class="btn-liquid" onclick="copyCard()">复制卡密</button>
-                <button class="btn-liquid btn-danger" onclick="logout()">安全退出</button>
             </div>
         </div>
-    </div>
 
-    <div class="glass-container" id="glass2">
-        <div class="music-player" id="musicPlayer">
-            <div class="album-art-container"><div class="album-art"></div></div>
-            <div class="music-info">
-                <div class="song-title">深海迷航 (Deep Ocean)</div>
-                <div class="song-artist">MOMO SYSTEM</div>
-                <div class="progress-container">
-                    <span id="currentTime">0:00</span>
-                    <div class="progress-bar-bg" onclick="seek(event)"><div class="progress-bar-fill" id="progressFill"></div></div>
-                    <span id="totalTime">0:00</span>
-                </div>
+        <div class="data-grid">
+            <div class="data-item">
+                <div class="data-label"><i class="fab fa-qq"></i> 绑定 QQ</div>
+                <div class="data-value skeleton" id="displayQQ">加载中...</div>
             </div>
-            <div class="controls">
-                <button class="control-btn"><i class="fas fa-step-backward"></i></button>
-                <button class="control-btn play-btn" onclick="togglePlay()"><i class="fas fa-play" id="playIcon"></i></button>
-                <button class="control-btn"><i class="fas fa-step-forward"></i></button>
+
+            <div class="data-item">
+                <div class="data-label"><i class="fas fa-clock"></i> 到期时间</div>
+                <div class="data-value skeleton" id="displayExpiry" style="color: #f59e0b !important;">加载中...</div>
+            </div>
+
+            <div class="data-item" style="grid-column: 1 / -1;">
+                <div class="data-label"><i class="fas fa-mobile-alt"></i> 当前设备码 (Device ID)</div>
+                <div class="data-value skeleton" id="displayDevice">加载中...</div>
             </div>
         </div>
-    </div>
 
-    <audio id="audioPlayer" src="bgm.mp3" preload="auto" loop></audio>
+        <div class="actions">
+            <button class="btn-logout" onclick="logout()">
+                <i class="fas fa-sign-out-alt"></i> 退出当前账号
+            </button>
+        </div>
+    </div>
 
     <script>
-        // ================== 页面核心逻辑 ==================
-        let currentCardKey = "";
-        let currentUsername = "";
+        const SUPABASE_URL = 'https://ifrlrkjmqheivdlainur.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_4-FnUR-78EsCyJk_jyQGYA_Hk0Yr5WJ';
 
-        const glassPanels = document.querySelectorAll('.glass-container');
-        glassPanels.forEach(panel => {
-            panel.addEventListener('mousemove', e => {
-                const rect = panel.getBoundingClientRect();
-                const x = e.clientX - rect.left; const y = e.clientY - rect.top;
-                panel.style.setProperty('--mouse-x', `${x}px`); panel.style.setProperty('--mouse-y', `${y}px`);
-            });
-        });
+        function showToast(msg, type = 'error') {
+            const toast = document.getElementById('toast');
+            toast.innerText = msg; toast.className = 'toast show ' + type;
+            setTimeout(() => { toast.classList.remove('show'); }, 4000);
+        }
 
-        const audio = document.getElementById('audioPlayer');
-        const playIcon = document.getElementById('playIcon');
-        const playerContainer = document.getElementById('musicPlayer');
-        const progressFill = document.getElementById('progressFill');
-        const currentTimeEl = document.getElementById('currentTime');
-        const totalTimeEl = document.getElementById('totalTime');
-        const hintOverlay = document.getElementById('musicHint');
+        // 页面加载时拉取云端数据
+        window.onload = async () => {
+            const username = localStorage.getItem("momo_user");
+            const deviceFp = localStorage.getItem("device_fp");
 
-        function startExperience() {
-            if(hintOverlay) {
-                hintOverlay.style.opacity = '0';
-                setTimeout(() => hintOverlay.style.display = 'none', 500);
+            if (!username) {
+                window.location.href = 'index.html';
+                return;
             }
-            audio.play().then(() => {
-                playIcon.classList.replace('fa-play', 'fa-pause');
-                playerContainer.classList.add('playing');
-            }).catch(e => { console.log("自动播放被拦截，等待手动点击。"); });
-        }
 
-        function togglePlay() {
-            if (!audio.src) { return; }
-            if (audio.paused) {
-                audio.play().catch(e => console.log(e));
-                playIcon.classList.replace('fa-play', 'fa-pause');
-                playerContainer.classList.add('playing');
-            } else {
-                audio.pause(); playIcon.classList.replace('fa-pause', 'fa-play'); playerContainer.classList.remove('playing');
-            }
-        }
+            // 移除骨架屏，渲染基础数据
+            document.getElementById("displayUser").classList.remove("skeleton");
+            document.getElementById("displayUser").innerText = username;
+            document.getElementById("userAvatar").innerText = username.charAt(0).toUpperCase();
 
-        function formatTime(seconds) {
-            if (isNaN(seconds)) return "0:00";
-            const min = Math.floor(seconds / 60); const sec = Math.floor(seconds % 60);
-            return `${min}:${sec < 10 ? '0' : ''}${sec}`;
-        }
-        audio.addEventListener('loadedmetadata', () => { totalTimeEl.innerText = formatTime(audio.duration); });
-        audio.addEventListener('timeupdate', () => {
-            if(audio.duration) {
-                const percent = (audio.currentTime / audio.duration) * 100;
-                progressFill.style.width = `${percent}%`; currentTimeEl.innerText = formatTime(audio.currentTime);
-            }
-        });
-        function seek(e) {
-            const bar = e.currentTarget; const rect = bar.getBoundingClientRect();
-            const percent = (e.clientX - rect.left) / rect.width;
-            if(audio.duration) audio.currentTime = percent * audio.duration;
-        }
+            document.getElementById("displayDevice").classList.remove("skeleton");
+            document.getElementById("displayDevice").innerText = deviceFp || "未绑定设备";
 
-        // ================== 使用安全后端获取数据 ==================
-        window.onload = async function() {
-            currentUsername = localStorage.getItem("momo_user");
-            if (!currentUsername) { window.location.href = 'index.html'; return; }
-            
+            // 去云端拉取真实的 QQ 和 到期时间
             try {
-                // 改为请求我们刚写的安全后端 (get-profile)
-                const response = await fetch('https://ifrlrkjmqheivdlainur.supabase.co/functions/v1/get-profile', {
+                // 注意：这里调用了你记忆档案里的 get-profile 云函数
+                const response = await fetch(`${SUPABASE_URL}/functions/v1/get-profile`, {
                     method: 'POST',
                     headers: { 
                         'Content-Type': 'application/json',
-                        'Authorization': 'Bearer sb_publishable_4-FnUR-78EsCyJk_jyQGYA_Hk0Yr5WJ'
+                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
                     },
-                    body: JSON.stringify({ username: currentUsername })
+                    body: JSON.stringify({ username: username })
                 });
-                
                 const result = await response.json();
-                
-                if (!result.success || !result.data) {
-                    document.getElementById("displayName").innerText = "获取数据失败";
-                    return;
+
+                document.getElementById("displayQQ").classList.remove("skeleton");
+                document.getElementById("displayExpiry").classList.remove("skeleton");
+
+                if (result.success && result.data) {
+                    // 渲染真实QQ (如果云函数没写QQ，这里可能显示未绑定)
+                    document.getElementById("displayQQ").innerText = result.data.qq || "未绑定QQ";
+                    // 渲染真实到期时间
+                    document.getElementById("displayExpiry").innerText = result.data.expiry_date || "长期有效";
+                } else {
+                    document.getElementById("displayQQ").innerText = "获取失败";
+                    document.getElementById("displayExpiry").innerText = "获取失败";
+                    showToast(result.message || "获取资料失败", "error");
                 }
-
-                const data = result.data;
-                
-                document.getElementById("displayName").innerText = data.username;
-                document.getElementById("displayQuota").innerText = data.token_quota || 0;
-                document.getElementById("displayQQ").innerText = data.qq || "未绑定";
-                document.getElementById("displayExpire").innerText = data.expiry_date;
-                currentCardKey = data.card_key;
-                document.getElementById("displayCard").innerText = data.card_key;
-
-                // 显示进群验证码
-                let currentBindCode = data.bind_code || "暂无验证码";
-                const btnGroup = document.querySelector('.btn-group');
-                const codeDiv = document.createElement('div');
-                codeDiv.className = 'detail-row'; 
-                codeDiv.style.marginTop = '15px';
-                codeDiv.innerHTML = `
-                    <span class="detail-label">进群验证码：</span>
-                    <div class="detail-val-box">
-                        <span class="data-value" style="color: #00d2ff; font-size: 18px; font-weight: bold;">/bind ${currentBindCode}</span>
-                    </div>
-                `;
-                btnGroup.parentNode.insertBefore(codeDiv, btnGroup);
-
-            } catch (e) { 
-                console.error(e); 
-                document.getElementById("displayName").innerText = "网络请求失败";
+            } catch (error) {
+                console.error("获取资料异常:", error);
+                document.getElementById("displayQQ").classList.remove("skeleton");
+                document.getElementById("displayExpiry").classList.remove("skeleton");
+                document.getElementById("displayQQ").innerText = "网络异常";
+                document.getElementById("displayExpiry").innerText = "网络异常";
+                showToast("网络请求失败，请刷新重试", "error");
             }
-        };
-
-        function copyCard() { 
-            if(!currentCardKey) return; 
-            navigator.clipboard.writeText(currentCardKey).then(() => alert("卡密已复制！")); 
         }
-        function logout() { localStorage.removeItem("momo_user"); window.location.href = 'index.html'; }
+
+        function logout() {
+            if(confirm("确定要退出当前账号吗？")) {
+                localStorage.removeItem("momo_user");
+                // 注意：千万不要清空 device_fp，否则设备绑定会失效
+                window.location.href = 'index.html';
+            }
+        }
     </script>
 </body>
 </html>
