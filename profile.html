@@ -7,7 +7,7 @@
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,600;1,600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Playfair+Display:ital,wght@0,600;1,600&display=swap" rel="stylesheet">
     <script src="https://fastly.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <style>
@@ -26,7 +26,7 @@
         
         .video-overlay {
             position: fixed; inset: 0; z-index: 1;
-            background: rgba(0, 0, 0, 0.1); /* 极轻微的暗化，不过度影响背景色彩 */
+            background: rgba(0, 0, 0, 0.15); /* 轻微压暗 */
             pointer-events: none;
         }
 
@@ -48,11 +48,11 @@
         
         .intro-small {
             font-size: 12px; letter-spacing: 12px; text-transform: uppercase;
-            margin-bottom: 20px; color: #000; font-weight: 600;
+            margin-bottom: 20px; color: #000; font-weight: 800;
         }
         .intro-title {
             font-family: 'Playfair Display', serif;
-            font-size: 80px; line-height: 1.1; font-weight: 600; color: #000; 
+            font-size: 80px; line-height: 1.1; font-weight: 700; color: #000; 
         }
 
         /* ================= 3. Centered Dashboard ================= */
@@ -63,86 +63,90 @@
         }
         
         .dashboard {
-            width: 95%; max-width: 440px; /* 面板放大 */
+            width: 95%; 
+            max-width: 520px; /* 👈 面板大幅放大 */
             transform: translateY(-100vh);
             opacity: 0;
             transition: transform 4.5s cubic-bezier(0.16, 1, 0.3, 1), opacity 2.5s ease-in-out;
         }
         .dashboard.slide-down { transform: translateY(0); opacity: 1; pointer-events: auto; }
 
-        /* ================= 4. iOS (Clear) 轻盈通透玻璃 ================= */
+        /* ================= 4. 颜色跟随背景的液态玻璃 ================= */
         .liquid-glass {
             position: relative;
-            padding: 32px 28px;
-            border-radius: 28px; 
+            padding: 45px 40px; /* 👈 内部空间更充裕 */
+            border-radius: 32px; /* 更大的圆角 */
             overflow: hidden;
             isolation: isolate;
             
-            /* 👈 核心改动：极低模糊度 (8px) + 超高饱和度，完美还原背景色彩 */
-            backdrop-filter: blur(8px) saturate(200%) contrast(110%);
-            -webkit-backdrop-filter: blur(8px) saturate(200%) contrast(110%);
+            /* 👈 核心：极高的饱和度 (250%) 让玻璃完全吸取背景颜色 */
+            backdrop-filter: blur(10px) saturate(250%) contrast(110%);
+            -webkit-backdrop-filter: blur(10px) saturate(250%) contrast(110%);
             
-            /* 👈 极淡的透明底色，不遮盖背景，只增加一点点磨砂感 */
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.02) 100%);
+            /* 👈 极低透明度的底色，几乎不改变背景原有的颜色 */
+            background: rgba(255, 255, 255, 0.05);
             
-            /* 👈 极亮的光学边缘：左上强反光，右下暗角 */
-            border: 1px solid rgba(255, 255, 255, 0.25);
+            /* 边缘折光 */
+            border: 1px solid rgba(255, 255, 255, 0.3);
             box-shadow: 
-                inset 1px 1px 2px rgba(255, 255, 255, 0.6),  /* 左上强白光 */
-                inset -1px -1px 2px rgba(0, 0, 0, 0.3),      /* 右下暗角 */
-                0 20px 40px rgba(0, 0, 0, 0.3);              /* 外部柔和投影 */
+                inset 1px 1px 2px rgba(255, 255, 255, 0.6),
+                inset -1px -1px 2px rgba(0, 0, 0, 0.2),
+                0 24px 50px rgba(0, 0, 0, 0.3);
         }
 
-        /* 表面斜向流光 */
+        /* 表面流光 */
         .liquid-glass::before {
             content: '';
             position: absolute;
             inset: 0;
-            background: linear-gradient(105deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 30%);
+            background: linear-gradient(105deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 30%);
             pointer-events: none;
             z-index: -1;
         }
 
-        /* ================= 5. Typography ================= */
+        /* ================= 5. Typography (全面加粗) ================= */
         .card-title {
-            font-size: 16px; font-weight: 500;
+            font-size: 20px; 
+            font-weight: 800; /* 👈 极粗 */
             color: #fff;
-            margin-bottom: 24px;
-            text-shadow: 0 1px 4px rgba(0,0,0,0.5); /* 增强阴影，防止在亮背景下看不清 */
+            margin-bottom: 30px;
+            letter-spacing: 0.5px;
         }
 
         .user-header {
-            display: flex; align-items: center; gap: 18px; margin-bottom: 30px;
+            display: flex; align-items: center; gap: 22px; margin-bottom: 36px;
         }
 
         .avatar-circle {
-            width: 60px; height: 60px; 
+            width: 76px; height: 76px; /* 头像放大 */
             border-radius: 50%; 
             background: rgba(255, 255, 255, 0.1);
             overflow: hidden;
             display: flex; justify-content: center; align-items: center;
-            border: 1px solid rgba(255, 255, 255, 0.4); 
-            box-shadow: inset 0 1px 3px rgba(255,255,255,0.3);
+            border: 2px solid rgba(255, 255, 255, 0.4); /* 边框加粗 */
         }
 
         .avatar-circle img {
             width: 100%; height: 100%; object-fit: cover;
         }
 
-        .user-identity { display: flex; flex-direction: column; gap: 4px; }
+        .user-identity { display: flex; flex-direction: column; gap: 6px; }
         .user-name { 
-            font-size: 20px; font-weight: 500; color: #fff; 
-            text-shadow: 0 1px 5px rgba(0,0,0,0.6); 
+            font-size: 26px; /* 名字放大 */
+            font-weight: 800; /* 名字极粗 */
+            color: #fff; 
         }
         .user-role { 
-            font-size: 14px; color: rgba(255, 255, 255, 0.85); 
-            text-shadow: 0 1px 3px rgba(0,0,0,0.4);
+            font-size: 16px; 
+            font-weight: 600; /* 角色加粗 */
+            color: rgba(255, 255, 255, 0.9); 
         }
 
-        .data-list { display: flex; flex-direction: column; gap: 16px; margin-bottom: 30px; }
+        .data-list { display: flex; flex-direction: column; gap: 22px; margin-bottom: 36px; }
         
         .data-row {
-            display: flex; justify-content: space-between; align-items: center; font-size: 15px;
+            display: flex; justify-content: space-between; align-items: center; 
+            font-size: 18px; /* 字号再次放大 */
             clip-path: inset(0 100% 0 0);
             opacity: 0;
             transition: clip-path 1.2s cubic-bezier(0.25, 1, 0.5, 1), opacity 1s ease-in-out;
@@ -150,45 +154,52 @@
         .data-row.reveal { clip-path: inset(0 0 0 0); opacity: 1; }
 
         .label { 
-            color: rgba(255, 255, 255, 0.85); 
-            font-weight: 400; 
-            text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+            color: rgba(255, 255, 255, 0.95);
+            font-weight: 700; /* 👈 标签加粗 */
+            font-family: 'Inter', system-ui, sans-serif;
         }
         .value { 
             color: #fff; 
-            font-weight: 500; 
-            font-family: ui-monospace, SFMono-Regular, monospace; 
-            text-shadow: 0 1px 4px rgba(0,0,0,0.6);
+            font-weight: 800; /* 👈 数值极粗 */
+            font-family: 'Inter', system-ui, sans-serif; 
         }
 
         .btn-logout {
-            width: 100%; padding: 16px;
-            background: rgba(255, 255, 255, 0.08);
-            border: 1px solid rgba(255, 255, 255, 0.25); 
-            border-radius: 14px; color: #fff;
-            font-size: 15px; font-weight: 500; cursor: pointer; transition: all 0.3s;
-            letter-spacing: 1px;
-            text-shadow: 0 1px 3px rgba(0,0,0,0.4);
-            box-shadow: inset 0 1px 1px rgba(255,255,255,0.1);
+            width: 100%; 
+            padding: 20px; /* 按钮更厚 */
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3); 
+            border-radius: 18px; 
+            color: #fff;
+            font-size: 18px; 
+            font-weight: 800; /* 👈 按钮字体极粗 */
+            cursor: pointer; transition: all 0.3s;
+            letter-spacing: 2px;
         }
         .btn-logout:hover {
-            background: rgba(255, 255, 255, 0.15);
-            border-color: rgba(255, 255, 255, 0.4);
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.5);
         }
 
-        .loading-box { display: flex; align-items: center; justify-content: center; gap: 10px; height: 140px; }
+        .loading-box { display: flex; align-items: center; justify-content: center; gap: 12px; height: 160px; }
         .spinner {
-            width: 16px; height: 16px; border: 1.5px solid rgba(255,255,255,0.3);
-            border-top: 1.5px solid #fff; border-radius: 50%;
+            width: 22px; height: 22px; border: 2.5px solid rgba(255,255,255,0.3);
+            border-top: 2.5px solid #fff; border-radius: 50%;
             animation: spin 1s linear infinite;
         }
         @keyframes spin { 100% { transform: rotate(360deg); } }
-        .loading-text { font-size: 14px; color: rgba(255,255,255,0.9); letter-spacing: 1px; text-shadow: 0 1px 2px rgba(0,0,0,0.4);}
+        .loading-text { font-size: 16px; font-weight: 700; color: rgba(255,255,255,0.9); letter-spacing: 1px;}
 
         @media (max-width: 768px) {
             #intro-screen { justify-content: center; padding-left: 0; text-align: center; }
             .intro-content { text-align: center; }
             .intro-title { font-size: 56px; }
+            
+            /* 手机端稍微缩小一点，防止撑爆屏幕 */
+            .dashboard { max-width: 90%; }
+            .liquid-glass { padding: 30px 24px; }
+            .user-name { font-size: 22px; }
+            .data-row { font-size: 16px; }
         }
     </style>
 </head>
