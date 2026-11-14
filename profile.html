@@ -22,13 +22,20 @@
 
         /* ================= 1. 视频背景 ================= */
         .video-container { position: fixed; inset: 0; z-index: -2; }
-        .video-container video { width: 100%; height: 100%; object-fit: cover; }
         
-        /* 增强景深：背景适度模糊+边缘暗化 */
+        .video-container video { 
+            width: 100%; height: 100%; object-fit: cover; 
+            /* 如果视频没加载出来，优先显示 bg.jpg */
+            background-image: url('bg.jpg');
+            background-size: cover;
+            background-position: center;
+        }
+        
+        /* 调淡了遮罩，让海底的蓝色更通透 */
         .video-overlay {
             position: fixed; inset: 0; z-index: -1;
-            background: radial-gradient(circle at center, rgba(0,0,0,0) 0%, rgba(0,0,0,0.5) 100%);
-            backdrop-filter: blur(8px) brightness(0.8); 
+            background: radial-gradient(circle at center, rgba(0,0,0,0) 0%, rgba(0,0,0,0.4) 100%);
+            backdrop-filter: blur(4px) brightness(0.85); 
         }
 
         /* ================= 2. 开场文字 ================= */
@@ -58,7 +65,7 @@
         .intro-title {
             font-family: 'Playfair Display', serif;
             font-size: 72px; line-height: 1.1; font-weight: 600;
-            letter-spacing: 2px; text-shadow: 0 4px 30px rgba(0,0,0,0.4);
+            letter-spacing: 2px; text-shadow: 0 4px 30px rgba(0,0,0,0.5);
         }
 
         /* ================= 3. 景深玻璃面板 ================= */
@@ -72,18 +79,18 @@
             width: 100%; max-width: 480px;
             position: relative;
             
-            /* 👇 核心：极度通透的背景色，让背景折射进来 */
-            background: rgba(15, 25, 40, 0.15); 
+            /* 极其纯净的深海蓝透明背景 */
+            background: rgba(10, 30, 50, 0.2); 
             
-            /* 👇 极高强度的背景模糊，完全吞噬背景杂色，形成纯色景深 */
-            backdrop-filter: blur(50px) saturate(160%);
-            -webkit-backdrop-filter: blur(50px) saturate(160%);
+            /* 超强毛玻璃，吃掉背景细节 */
+            backdrop-filter: blur(40px) saturate(150%);
+            -webkit-backdrop-filter: blur(40px) saturate(150%);
             
-            /* 👇 去掉生硬的边框，只用微弱的反光 */
-            border: 1px solid rgba(255, 255, 255, 0.08);
+            /* 无边框感，仅顶部微光 */
+            border: 1px solid rgba(255, 255, 255, 0.1);
             box-shadow: 
-                inset 0 1px 1px rgba(255, 255, 255, 0.3), /* 顶部极光 */
-                inset 0 0 30px rgba(255, 255, 255, 0.02); /* 内部微光 */
+                inset 0 1px 1px rgba(255, 255, 255, 0.3), 
+                inset 0 0 30px rgba(255, 255, 255, 0.02);
             border-radius: 28px;
             overflow: hidden;
             
@@ -91,10 +98,9 @@
             transition: transform 4.5s cubic-bezier(0.16, 1, 0.3, 1), opacity 2.5s ease-in-out;
         }
 
-        /* 👇 核心：面板背后的环境光晕，让它像是嵌在背景里，而不是贴在上面 */
         .profile-glass::before {
             content: ''; position: absolute; inset: -20px;
-            background: radial-gradient(circle at center, rgba(255,255,255,0.05) 0%, transparent 60%);
+            background: radial-gradient(circle at center, rgba(0, 210, 255, 0.1) 0%, transparent 60%);
             z-index: -1; pointer-events: none; filter: blur(20px);
         }
 
@@ -110,7 +116,6 @@
 
         .avatar {
             width: 64px; height: 64px; border-radius: 50%;
-            /* 头像背景融入环境，半透明 */
             background: rgba(255, 255, 255, 0.1);
             display: flex; justify-content: center; align-items: center;
             font-size: 24px; font-family: 'Playfair Display', serif; font-weight: 600;
@@ -145,23 +150,21 @@
         .data-row {
             display: flex; justify-content: space-between; align-items: center;
             padding: 20px 0;
-            /* 极难察觉的透明分割线 */
-            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
         }
         .data-row:last-child { border-bottom: none; }
 
         .data-label { 
-            color: rgba(255, 255, 255, 0.55); font-size: 13px; 
+            color: rgba(255, 255, 255, 0.6); font-size: 13px; 
             display: flex; align-items: center; gap: 12px; 
             font-weight: 300; letter-spacing: 0.5px;
         }
-        .data-label i { color: rgba(255, 255, 255, 0.7); font-size: 14px; width: 16px; text-align: center; }
+        .data-label i { color: rgba(255, 255, 255, 0.8); font-size: 14px; width: 16px; text-align: center; }
         
         .data-value { 
-            color: rgba(255, 255, 255, 0.9); font-size: 14px; font-weight: 500;
+            color: #fff; font-size: 14px; font-weight: 500;
             text-align: right; word-break: break-all; max-width: 65%;
-            letter-spacing: 1px;
-            font-family: 'Inter', monospace; 
+            letter-spacing: 1px; font-family: 'Inter', monospace; 
             text-shadow: 0 1px 4px rgba(0,0,0,0.3);
         }
         
@@ -172,15 +175,15 @@
         /* 底部操作区 */
         .actions { padding: 10px 35px 35px; position: relative; }
         .btn-logout {
-            width: 100%; padding: 15px; background: transparent; color: rgba(255,255,255,0.6);
+            width: 100%; padding: 15px; background: rgba(255, 255, 255, 0.03); color: rgba(255,255,255,0.7);
             border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 14px;
             font-size: 14px; font-weight: 400; cursor: pointer; transition: all 0.4s;
             display: flex; justify-content: center; align-items: center; gap: 8px;
             letter-spacing: 1px;
         }
         .btn-logout:hover { 
-            background: rgba(255, 255, 255, 0.08); color: #fff; border-color: rgba(255,255,255,0.3);
-            box-shadow: 0 0 20px rgba(255, 255, 255, 0.05);
+            background: rgba(255, 255, 255, 0.1); color: #fff; border-color: rgba(255,255,255,0.3);
+            box-shadow: 0 0 20px rgba(0, 210, 255, 0.1);
         }
 
         @media (max-width: 768px) {
@@ -194,7 +197,8 @@
 <body>
 
     <div class="video-container">
-        <video src="bg.mp4" autoplay loop muted playsinline></video>
+        <!-- 加上了 id 方便 JS 强制播放，并设置 poster 兜底 -->
+        <video id="bgVideo" src="bg.mp4" poster="bg.jpg" autoplay loop muted playsinline></video>
     </div>
     <div class="video-overlay"></div>
 
@@ -245,6 +249,14 @@
     <script>
         const SUPABASE_URL = 'https://ifrlrkjmqheivdlainur.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_4-FnUR-78EsCyJk_jyQGYA_Hk0Yr5WJ';
+
+        // 👇 强制让视频播放的逻辑 👇
+        const bgVideo = document.getElementById('bgVideo');
+        bgVideo.play().catch(error => {
+            console.log("自动播放被拦截，尝试静音重试:", error);
+            bgVideo.muted = true;
+            bgVideo.play();
+        });
 
         window.addEventListener('DOMContentLoaded', () => {
             const introContent = document.getElementById('intro-content');
