@@ -7,7 +7,7 @@
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=Playfair+Display:ital,wght@0,600;1,600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://fastly.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
@@ -15,233 +15,208 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
         html, body { 
-            height: 100%; width: 100%;
-            overflow: hidden; 
-            font-family: 'Inter', sans-serif; 
-            background-color: #000; color: #fff;
+            height: 100%; width: 100%; overflow: hidden; 
+            font-family: 'Inter', sans-serif; background-color: #000; color: #fff;
+            -webkit-font-smoothing: antialiased;
         }
 
-        /* ================= 1. 视频背景 (最底层) ================= */
-        .video-container { 
-            position: fixed; 
-            top: 0; left: 0; width: 100vw; height: 100vh; 
-            z-index: 0; /* 改为 0，确保在黑色背景之上 */
-            background-color: #000;
-        }
+        /* ================= 1. 视频背景 ================= */
+        .video-container { position: fixed; inset: 0; z-index: 0; background: #000; }
+        .video-container video { width: 100%; height: 100%; object-fit: cover; }
         
-        .video-container video { 
-            width: 100%; height: 100%; object-fit: cover; 
-        }
-        
-        /* ================= 2. 遮罩层 (视频之上) ================= */
         .video-overlay {
-            position: fixed; 
-            top: 0; left: 0; width: 100vw; height: 100vh; 
-            z-index: 1; /* 在视频上面 */
-            background: radial-gradient(circle at center, rgba(0,0,0,0) 0%, rgba(0,0,0,0.5) 100%);
-            backdrop-filter: blur(4px); 
+            position: fixed; inset: 0; z-index: 1;
+            background: linear-gradient(to right, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.1) 100%);
             pointer-events: none;
         }
 
-        /* ================= 3. 开场文字 ================= */
+        /* ================= 2. 开场文字 ================= */
         #intro-screen {
-            position: absolute; inset: 0;
-            display: flex; justify-content: flex-start; align-items: center;
-            padding-left: 12vw; z-index: 10; pointer-events: none;
+            position: absolute; inset: 0; display: flex; align-items: center;
+            padding-left: 10vw; z-index: 10; pointer-events: none;
         }
 
         .intro-content {
-            text-align: left;
-            transform: translateY(-80px); opacity: 0;
+            text-align: left; transform: translateY(-40px); opacity: 0;
             transition: transform 3.5s cubic-bezier(0.16, 1, 0.3, 1), opacity 2.5s ease-in-out;
         }
 
         .intro-content.show { transform: translateY(0); opacity: 1; }
         .intro-content.hide-up {
-            transform: translateY(-80px); opacity: 0;
+            transform: translateY(-40px); opacity: 0;
             transition: transform 1.5s cubic-bezier(0.16, 1, 0.3, 1), opacity 1s ease-in-out;
         }
 
         .intro-small {
-            font-size: 13px; letter-spacing: 8px; text-transform: uppercase;
-            margin-bottom: 20px; color: rgba(255, 255, 255, 0.8); font-weight: 300;
+            font-size: 12px; letter-spacing: 12px; text-transform: uppercase;
+            margin-bottom: 20px; color: #000; font-weight: 600;
+            text-shadow: 0 0 20px rgba(255, 255, 255, 1);
         }
 
         .intro-title {
             font-family: 'Playfair Display', serif;
-            font-size: 72px; line-height: 1.1; font-weight: 600;
-            letter-spacing: 2px; text-shadow: 0 4px 30px rgba(0,0,0,0.5);
+            font-size: 80px; line-height: 1.1; font-weight: 600;
+            letter-spacing: 0px; color: #000; 
+            text-shadow: 0 0 30px rgba(255, 255, 255, 1);
         }
 
-        /* ================= 4. 景深玻璃面板 ================= */
+        /* ================= 3. 非对称高级仪表盘 ================= */
         #main-panel {
             position: absolute; inset: 0;
-            display: flex; justify-content: center; align-items: center;
-            padding: 20px; z-index: 5; pointer-events: none;
+            display: flex; align-items: center;
+            padding-left: 10vw; z-index: 5; pointer-events: none;
         }
 
-        .profile-glass {
-            width: 100%; max-width: 480px;
-            position: relative;
-            background: rgba(10, 30, 50, 0.2); 
-            backdrop-filter: blur(40px) saturate(150%);
-            -webkit-backdrop-filter: blur(40px) saturate(150%);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 
-                inset 0 1px 1px rgba(255, 255, 255, 0.3), 
-                inset 0 0 30px rgba(255, 255, 255, 0.02);
-            border-radius: 28px;
-            overflow: hidden;
-            
+        .dashboard {
+            width: 100%; max-width: 600px;
             transform: translateY(-100vh); opacity: 0;
             transition: transform 4.5s cubic-bezier(0.16, 1, 0.3, 1), opacity 2.5s ease-in-out;
         }
 
-        .profile-glass::before {
-            content: ''; position: absolute; inset: -20px;
-            background: radial-gradient(circle at center, rgba(0, 210, 255, 0.1) 0%, transparent 60%);
-            z-index: -1; pointer-events: none; filter: blur(20px);
-        }
+        .dashboard.slide-down { transform: translateY(0); opacity: 1; pointer-events: auto; }
 
-        .profile-glass.slide-down {
-            transform: translateY(0); opacity: 1; pointer-events: auto; 
-        }
-
-        /* 头部 */
-        .header {
-            padding: 35px 35px 25px;
-            display: flex; align-items: center; gap: 20px; position: relative;
-        }
-
-        .avatar {
-            width: 64px; height: 64px; border-radius: 50%;
-            background: rgba(255, 255, 255, 0.1);
-            display: flex; justify-content: center; align-items: center;
-            font-size: 24px; font-family: 'Playfair Display', serif; font-weight: 600;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            box-shadow: inset 0 0 15px rgba(255, 255, 255, 0.1);
-            text-shadow: 0 2px 5px rgba(0,0,0,0.2);
-        }
-
-        .user-info { flex: 1; }
-        .user-info h1 { 
-            font-size: 22px; color: #fff; font-weight: 500; 
-            margin-bottom: 6px; letter-spacing: 1px;
-            text-shadow: 0 2px 10px rgba(255, 255, 255, 0.2); 
-        }
+        /* 顶部名字区域 */
+        .user-header { margin-bottom: 40px; }
         
-        .status-badge {
-            display: inline-flex; align-items: center; gap: 6px;
-            font-size: 12px; color: rgba(255, 255, 255, 0.6); font-weight: 300;
-            letter-spacing: 0.5px;
+        .greeting {
+            font-size: 13px; color: rgba(255,255,255,0.6); 
+            text-transform: uppercase; letter-spacing: 4px; margin-bottom: 10px;
         }
-        .status-dot { 
-            width: 5px; height: 5px; background: #10b981; border-radius: 50%; 
-            box-shadow: 0 0 10px #10b981;
-            animation: pulse-green 2s infinite; 
-        }
-        @keyframes pulse-green { 0% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(0.8); } 100% { opacity: 1; transform: scale(1); } }
 
-        /* 数据列表 */
-        .data-list { padding: 0 35px 15px; position: relative; }
-        
-        .data-row {
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 20px 0;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        .user-name {
+            font-family: 'Playfair Display', serif;
+            font-size: 64px; font-weight: 400; line-height: 1;
+            color: #fff; letter-spacing: 1px;
         }
-        .data-row:last-child { border-bottom: none; }
 
-        .data-label { 
-            color: rgba(255, 255, 255, 0.6); font-size: 13px; 
-            display: flex; align-items: center; gap: 12px; 
-            font-weight: 300; letter-spacing: 0.5px;
-        }
-        .data-label i { color: rgba(255, 255, 255, 0.8); font-size: 14px; width: 16px; text-align: center; }
-        
-        .data-value { 
-            color: #fff; font-size: 14px; font-weight: 500;
-            text-align: right; word-break: break-all; max-width: 65%;
-            letter-spacing: 1px; font-family: 'Inter', monospace; 
-            text-shadow: 0 1px 4px rgba(0,0,0,0.3);
-        }
-        
-        .skeleton { background: rgba(255,255,255,0.1); color: transparent !important; border-radius: 4px; animation: pulse 1.5s infinite; }
-        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
-
-        /* 底部操作区 */
-        .actions { padding: 10px 35px 35px; position: relative; }
-        .btn-logout {
-            width: 100%; padding: 15px; background: rgba(255, 255, 255, 0.03); color: rgba(255,255,255,0.7);
-            border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 14px;
-            font-size: 14px; font-weight: 400; cursor: pointer; transition: all 0.4s;
-            display: flex; justify-content: center; align-items: center; gap: 8px;
+        .status-tag {
+            display: inline-flex; align-items: center; gap: 8px;
+            margin-top: 15px; font-size: 12px; color: rgba(255,255,255,0.7);
             letter-spacing: 1px;
         }
+        .status-tag::before {
+            content: ''; width: 8px; height: 8px; background: #10b981;
+            border-radius: 50%; box-shadow: 0 0 10px #10b981;
+        }
+
+        /* 加载动画 (深色版) */
+        .loading-box { display: flex; align-items: center; gap: 12px; margin-top: 30px; }
+        .spinner {
+            width: 16px; height: 16px; border: 1.5px solid rgba(255,255,255,0.1);
+            border-top: 1.5px solid #fff; border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+        .loading-text { font-size: 12px; color: rgba(255,255,255,0.5); letter-spacing: 1px; }
+
+        /* 数据微模块 (胶囊玻璃) */
+        .data-capsules { display: flex; flex-direction: column; gap: 15px; margin-top: 30px; }
+        
+        .capsule {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 16px 24px;
+            width: fit-content; min-width: 320px;
+            
+            /* 核心：高级深色微玻璃 */
+            background: rgba(15, 20, 30, 0.3);
+            backdrop-filter: blur(20px) saturate(150%);
+            -webkit-backdrop-filter: blur(20px) saturate(150%);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px; /* 不那么圆，带有科技感 */
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.1);
+            transition: 0.3s;
+        }
+        .capsule:hover {
+            background: rgba(25, 35, 50, 0.5);
+            border-color: rgba(255, 255, 255, 0.2);
+            transform: translateX(10px);
+        }
+
+        .cap-label { 
+            font-size: 12px; color: rgba(255,255,255,0.5); 
+            letter-spacing: 2px; display: flex; align-items: center; gap: 10px;
+        }
+        .cap-label i { font-size: 14px; color: #fff; opacity: 0.8; }
+        
+        .cap-value { 
+            font-size: 14px; color: #fff; font-weight: 400;
+            font-family: monospace; letter-spacing: 1px;
+        }
+
+        /* 底部操作 */
+        .actions { margin-top: 40px; }
+        .btn-logout {
+            padding: 14px 40px; background: transparent; color: rgba(255,255,255,0.6);
+            border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 50px;
+            font-size: 13px; font-weight: 400; cursor: pointer; transition: all 0.3s;
+            letter-spacing: 2px; text-transform: uppercase;
+        }
         .btn-logout:hover { 
-            background: rgba(255, 255, 255, 0.1); color: #fff; border-color: rgba(255,255,255,0.3);
-            box-shadow: 0 0 20px rgba(0, 210, 255, 0.1);
+            background: #fff; color: #000; border-color: #fff;
         }
 
         @media (max-width: 768px) {
+            .video-overlay { background: rgba(0,0,0,0.5); } /* 手机端增强暗化 */
             #intro-screen { justify-content: center; padding-left: 0; text-align: center; }
-            .intro-content { text-align: center; }
-            .intro-title { font-size: 48px; }
-            .header { flex-direction: column; text-align: center; gap: 16px; }
+            .intro-title { font-size: 56px; }
+            #main-panel { justify-content: center; padding-left: 0; }
+            .dashboard { text-align: center; display: flex; flex-direction: column; align-items: center; }
+            .user-name { font-size: 48px; }
+            .capsule { min-width: 300px; }
+            .capsule:hover { transform: translateY(-2px); }
         }
     </style>
 </head>
 <body>
 
-    <!-- 视频背景 -->
     <div class="video-container">
         <video id="bgVideo" src="bg.mp4" poster="bg.jpg" autoplay loop muted playsinline></video>
     </div>
-    
-    <!-- 遮罩层 -->
     <div class="video-overlay"></div>
 
-    <!-- 开场文字 -->
     <div id="intro-screen">
         <div class="intro-content" id="intro-content">
-            <div class="intro-small">Feel the world slow down</div>
-            <div class="intro-title">Closer to<br>the ocean.</div>
+            <div class="intro-small">Listen to the ocean</div>
+            <div class="intro-title">Chasing<br>the light.</div>
         </div>
     </div>
 
-    <!-- 面板 -->
+    <!-- 非对称悬浮仪表盘 -->
     <div id="main-panel">
-        <div class="profile-glass" id="profile-glass">
-            <div class="header">
-                <div class="avatar" id="userAvatar">...</div>
-                <div class="user-info">
-                    <h1 id="displayUser" class="skeleton" style="width: 100px;">加载中...</h1>
-                    <div class="status-badge">
-                        <div class="status-dot"></div> 授权状态正常
-                    </div>
-                </div>
+        <div class="dashboard" id="profile-glass">
+            
+            <div class="user-header">
+                <div class="greeting">Welcome back</div>
+                <div class="user-name" id="displayUser">加载中...</div>
+                <div class="status-tag">System Active</div>
             </div>
 
-            <div class="data-list">
-                <div class="data-row">
-                    <div class="data-label"><i class="fab fa-qq"></i> 绑定 QQ</div>
-                    <div class="data-value skeleton" id="displayQQ">加载中...</div>
+            <!-- 加载圈 -->
+            <div id="loadingState" class="loading-box">
+                <div class="spinner"></div>
+                <div class="loading-text">正在同步云端凭证...</div>
+            </div>
+
+            <!-- 微模块数据胶囊 -->
+            <div class="data-capsules" id="dataList" style="display: none;">
+                <div class="capsule">
+                    <div class="cap-label"><i class="fab fa-qq"></i> QQ</div>
+                    <div class="cap-value" id="displayQQ">-</div>
                 </div>
-                <div class="data-row">
-                    <div class="data-label"><i class="far fa-calendar-alt"></i> 到期时间</div>
-                    <div class="data-value skeleton" id="displayExpiry">加载中...</div>
+                <div class="capsule">
+                    <div class="cap-label"><i class="far fa-calendar-alt"></i> EXPIRY</div>
+                    <div class="cap-value" id="displayExpiry">-</div>
                 </div>
-                <div class="data-row">
-                    <div class="data-label"><i class="fas fa-fingerprint"></i> 专属设备码</div>
-                    <div class="data-value skeleton" id="displayDevice">加载中...</div>
+                <div class="capsule">
+                    <div class="cap-label"><i class="fas fa-fingerprint"></i> DEVICE</div>
+                    <div class="cap-value" id="displayDevice">-</div>
                 </div>
             </div>
 
             <div class="actions">
-                <button class="btn-logout" onclick="logout()">
-                    <i class="fas fa-sign-out-alt" style="opacity: 0.6;"></i> 退出当前账号
-                </button>
+                <button class="btn-logout" onclick="logout()">Log out</button>
             </div>
+            
         </div>
     </div>
 
@@ -249,16 +224,10 @@
         const SUPABASE_URL = 'https://ifrlrkjmqheivdlainur.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_4-FnUR-78EsCyJk_jyQGYA_Hk0Yr5WJ';
 
-        // 强制让视频播放的逻辑
         const bgVideo = document.getElementById('bgVideo');
-        
         window.addEventListener('load', () => {
             bgVideo.play().catch(err => {
-                console.log("自动播放被拦截，等待用户点击");
-                // 用户点击屏幕任何地方时，强制播放
-                document.body.addEventListener('click', () => {
-                    bgVideo.play();
-                }, { once: true });
+                document.body.addEventListener('click', () => { bgVideo.play(); }, { once: true });
             });
         });
 
@@ -282,51 +251,37 @@
         async function loadUserData() {
             const username = localStorage.getItem("momo_user");
             const deviceFp = localStorage.getItem("device_fp");
+            if (!username) { window.location.href = 'index.html'; return; }
 
-            if (!username) {
-                window.location.href = 'index.html';
-                return;
-            }
-
-            document.getElementById("displayUser").classList.remove("skeleton");
             document.getElementById("displayUser").innerText = username;
-            document.getElementById("userAvatar").innerText = username.charAt(0).toUpperCase();
-
-            document.getElementById("displayDevice").classList.remove("skeleton");
             document.getElementById("displayDevice").innerText = deviceFp || "未绑定";
 
             try {
                 const response = await fetch(`${SUPABASE_URL}/functions/v1/get-profile`, {
                     method: 'POST',
-                    headers: { 
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
-                    },
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` },
                     body: JSON.stringify({ username: username })
                 });
                 const result = await response.json();
 
-                document.getElementById("displayQQ").classList.remove("skeleton");
-                document.getElementById("displayExpiry").classList.remove("skeleton");
-
                 if (result.success && result.data) {
-                    document.getElementById("displayQQ").innerText = result.data.qq || "未绑定QQ";
+                    document.getElementById("displayQQ").innerText = result.data.qq || "未绑定";
                     document.getElementById("displayExpiry").innerText = result.data.expiry_date || "长期有效";
                 } else {
                     document.getElementById("displayQQ").innerText = "获取失败";
                     document.getElementById("displayExpiry").innerText = "获取失败";
                 }
             } catch (error) {
-                console.error("获取资料异常:", error);
-                document.getElementById("displayQQ").classList.remove("skeleton");
-                document.getElementById("displayExpiry").classList.remove("skeleton");
                 document.getElementById("displayQQ").innerText = "网络异常";
                 document.getElementById("displayExpiry").innerText = "网络异常";
+            } finally {
+                document.getElementById('loadingState').style.display = 'none';
+                document.getElementById('dataList').style.display = 'flex';
             }
         }
 
         function logout() {
-            if(confirm("确定要退出当前账号吗？")) {
+            if(confirm("确定要退出当前系统吗？")) {
                 localStorage.removeItem("momo_user");
                 window.location.href = 'index.html';
             }
