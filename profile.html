@@ -63,7 +63,8 @@
         }
         
         .dashboard {
-            width: 90%; max-width: 380px; 
+            width: 95%; 
+            max-width: 420px; /* 👈 面板放大 */
             transform: translateY(-100vh) translateZ(0);
             opacity: 0;
             will-change: transform, opacity;
@@ -71,60 +72,58 @@
         }
         .dashboard.slide-down { transform: translateY(0) translateZ(0); opacity: 1; pointer-events: auto; }
 
-        /* ================= 4. 深邃显眼的液态玻璃 ================= */
+        /* ================= 4. 登录页同款液态玻璃 ================= */
         .liquid-glass {
             position: relative;
-            padding: 28px 24px; 
-            border-radius: 28px; 
+            padding: 32px 28px; /* 内部空间放大 */
+            border-radius: 28px;
             overflow: hidden;
             isolation: isolate;
             
-            /* 中度模糊，保留折射感 */
-            backdrop-filter: blur(25px) saturate(150%) contrast(110%);
-            -webkit-backdrop-filter: blur(25px) saturate(150%) contrast(110%);
+            /* 完美复刻 index.html 的玻璃参数 */
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(25px) saturate(180%);
+            -webkit-backdrop-filter: blur(25px) saturate(180%);
             
-            /* 👈 1. 深度压暗底色：像一块深色防爆玻璃，直接和亮色背景拉开差距 */
-            background: linear-gradient(135deg, rgba(15, 25, 35, 0.75) 0%, rgba(5, 10, 15, 0.6) 100%);
-            
-            /* 👈 2. 锐利的边框与悬浮光晕 */
-            border: 1px solid rgba(255, 255, 255, 0.3);
+            border: 1px solid transparent;
+            background-clip: padding-box;
             box-shadow: 
-                /* 顶部强反光 */
-                inset 0 1px 3px rgba(255, 255, 255, 0.6),  
-                /* 底部暗角 */
-                inset 0 -2px 6px rgba(0, 0, 0, 0.5),
-                /* 外部环境光晕（让面板更有实体感） */
-                0 0 30px rgba(0, 0, 0, 0.4),              
-                0 24px 48px rgba(0, 0, 0, 0.6);              
+                inset 0 1px 1px rgba(255, 255, 255, 0.4),
+                inset 0 -1px 1px rgba(0, 0, 0, 0.2),
+                0 30px 60px rgba(0, 0, 0, 0.5),
+                0 0 0 1px rgba(255, 255, 255, 0.05);
         }
 
-        /* 表面 45 度流光 */
+        /* 完美复刻 斜向光泽 */
         .liquid-glass::before {
-            content: ''; position: absolute; inset: 0; z-index: -1;
-            background: linear-gradient(105deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 40%);
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0) 40%);
             pointer-events: none;
+            z-index: -1;
         }
 
         /* ================= 5. Typography & Avatar ================= */
         .card-title {
-            font-size: 14px; font-weight: 600;
-            color: rgba(255, 255, 255, 0.95);
-            margin-bottom: 24px; letter-spacing: 0.5px;
-            text-shadow: 0 1px 4px rgba(0,0,0,0.8); 
+            font-size: 15px; font-weight: 500;
+            color: #fff;
+            margin-bottom: 26px; letter-spacing: 0.5px;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.5); 
         }
 
         .user-header {
-            display: flex; align-items: center; gap: 16px; margin-bottom: 30px;
+            display: flex; align-items: center; gap: 18px; margin-bottom: 32px;
         }
 
         .avatar-circle {
-            width: 54px; height: 54px; 
+            width: 60px; height: 60px; 
             border-radius: 50%; 
             background: rgba(255, 255, 255, 0.1);
             overflow: hidden;
             display: flex; justify-content: center; align-items: center;
-            border: 1px solid rgba(255, 255, 255, 0.5); /* 边框加强 */
-            box-shadow: inset 0 1px 3px rgba(255, 255, 255, 0.3), 0 2px 8px rgba(0,0,0,0.3); 
+            border: 1px solid rgba(255, 255, 255, 0.4); 
+            box-shadow: inset 0 1px 3px rgba(255, 255, 255, 0.3), 0 4px 10px rgba(0,0,0,0.2); 
         }
 
         .avatar-circle img {
@@ -133,19 +132,18 @@
 
         .user-identity { display: flex; flex-direction: column; gap: 4px; }
         .user-name { 
-            font-size: 18px; font-weight: 600; color: #fff; 
-            text-shadow: 0 1px 5px rgba(0,0,0,0.8); 
+            font-size: 20px; font-weight: 600; color: #fff; 
+            text-shadow: 0 1px 5px rgba(0,0,0,0.5); 
         }
         .user-role { 
-            font-size: 13px; color: rgba(255, 255, 255, 0.8); 
-            text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+            font-size: 14px; color: rgba(255, 255, 255, 0.9); 
+            text-shadow: 0 1px 3px rgba(0,0,0,0.5);
         }
 
-        .data-list { display: flex; flex-direction: column; gap: 16px; margin-bottom: 28px; }
+        .data-list { display: flex; flex-direction: column; gap: 18px; margin-bottom: 32px; }
         
-        /* 从左到右描绘动画初始状态 */
         .data-row {
-            display: flex; justify-content: space-between; align-items: center; font-size: 14px; 
+            display: flex; justify-content: space-between; align-items: center; font-size: 15px; 
             clip-path: inset(0 100% 0 0);
             opacity: 0;
             transition: clip-path 1.2s cubic-bezier(0.25, 1, 0.5, 1), opacity 1s ease-in-out;
@@ -157,38 +155,38 @@
 
         .label { 
             color: rgba(255, 255, 255, 0.85); font-weight: 400; 
-            text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+            text-shadow: 0 1px 3px rgba(0,0,0,0.6);
         }
         .value { 
             color: #fff; font-weight: 500; 
             font-family: ui-monospace, SFMono-Regular, monospace; 
-            text-shadow: 0 1px 4px rgba(0,0,0,0.9);
+            text-shadow: 0 1px 4px rgba(0,0,0,0.6);
         }
 
         .btn-logout {
-            width: 100%; padding: 14px;
-            background: rgba(255, 255, 255, 0.08);
-            border: 1px solid rgba(255, 255, 255, 0.3); /* 按钮边框加强 */
-            border-radius: 12px; color: #fff;
-            font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.3s;
+            width: 100%; padding: 16px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2); 
+            border-radius: 14px; color: #fff;
+            font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.3s;
             text-transform: uppercase; letter-spacing: 1px;
             box-shadow: inset 0 1px 1px rgba(255,255,255,0.2);
-            text-shadow: 0 1px 3px rgba(0,0,0,0.6);
+            text-shadow: 0 1px 3px rgba(0,0,0,0.5);
         }
         .btn-logout:hover {
             background: rgba(255, 255, 255, 0.2);
-            border-color: rgba(255, 255, 255, 0.6);
+            border-color: rgba(255, 255, 255, 0.4);
         }
 
         /* Loading */
-        .loading-box { display: flex; align-items: center; justify-content: center; gap: 8px; height: 120px; }
+        .loading-box { display: flex; align-items: center; justify-content: center; gap: 8px; height: 130px; }
         .spinner {
-            width: 14px; height: 14px; border: 1.5px solid rgba(255,255,255,0.2);
+            width: 16px; height: 16px; border: 1.5px solid rgba(255,255,255,0.2);
             border-top: 1.5px solid #fff; border-radius: 50%;
             animation: spin 1s linear infinite;
         }
         @keyframes spin { 100% { transform: rotate(360deg); } }
-        .loading-text { font-size: 12px; color: rgba(255,255,255,0.9); letter-spacing: 1px; text-shadow: 0 1px 3px rgba(0,0,0,0.8);}
+        .loading-text { font-size: 13px; color: rgba(255,255,255,0.9); letter-spacing: 1px; text-shadow: 0 1px 3px rgba(0,0,0,0.6);}
 
         @media (max-width: 768px) {
             #intro-screen { justify-content: center; padding-left: 0; text-align: center; }
