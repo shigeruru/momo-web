@@ -3,12 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MOMO - Dashboard</title>
+    <title>MOMO - User Info</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,600;1,600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://fastly.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <style>
@@ -25,19 +24,21 @@
         .video-container { position: fixed; inset: 0; z-index: 0; background: #000; }
         .video-container video { width: 100%; height: 100%; object-fit: cover; }
         
+        /* 极度轻微的暗角，不影响视频清晰度 */
         .video-overlay {
             position: fixed; inset: 0; z-index: 1;
-            background: rgba(0, 0, 0, 0.15);
+            background: radial-gradient(circle at center, rgba(0,0,0,0) 30%, rgba(0,0,0,0.3) 100%);
             pointer-events: none;
         }
 
         /* ================= 2. Intro Animation ================= */
         #intro-screen {
-            position: absolute; inset: 0; display: flex; flex-direction: column;
-            justify-content: center; align-items: center; z-index: 10; pointer-events: none;
+            position: absolute; inset: 0; display: flex; 
+            justify-content: flex-start; align-items: center;
+            padding-left: 10vw; z-index: 10; pointer-events: none;
         }
         .intro-content {
-            text-align: center; transform: translateY(-40px); opacity: 0;
+            text-align: left; transform: translateY(-40px); opacity: 0;
             transition: transform 3.5s cubic-bezier(0.16, 1, 0.3, 1), opacity 2.5s ease-in-out;
         }
         .intro-content.show { transform: translateY(0); opacity: 1; }
@@ -50,11 +51,9 @@
             font-size: 12px; letter-spacing: 12px; text-transform: uppercase;
             margin-bottom: 20px; color: #000; font-weight: 600;
         }
-        
         .intro-title {
             font-family: 'Playfair Display', serif;
-            font-size: 80px; line-height: 1.1; font-weight: 600;
-            color: #000; 
+            font-size: 80px; line-height: 1.1; font-weight: 600; color: #000; 
         }
 
         /* ================= 3. Centered Dashboard ================= */
@@ -65,106 +64,113 @@
         }
         
         .dashboard {
-            width: 90%; max-width: 340px; 
+            width: 90%; max-width: 320px; /* 完美还原截图的修长比例 */
             transform: translateY(-100vh); opacity: 0;
             transition: transform 4.5s cubic-bezier(0.16, 1, 0.3, 1), opacity 2.5s ease-in-out;
         }
         .dashboard.slide-down { transform: translateY(0); opacity: 1; pointer-events: auto; }
 
-        /* ================= 4. Liquid Glass ================= */
+        /* ================= 4. 终极液态玻璃 (Liquid Glass) ================= */
         .liquid-glass {
             position: relative;
             padding: 24px;
-            border-radius: 32px; 
+            border-radius: 28px; 
             overflow: hidden;
             isolation: isolate;
             
-            backdrop-filter: blur(20px) saturate(300%) contrast(120%) brightness(1.1);
-            -webkit-backdrop-filter: blur(20px) saturate(300%) contrast(120%) brightness(1.1);
+            /* 1. 极低模糊，极高饱和，保留背景色彩细节 */
+            backdrop-filter: blur(12px) saturate(200%) contrast(120%);
+            -webkit-backdrop-filter: blur(12px) saturate(200%) contrast(120%);
             
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.05) 100%);
+            /* 2. 几乎透明的底色 */
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.02) 100%);
             
+            /* 3. 物理光学边缘 */
             box-shadow: 
-                inset 0 0 0 1px rgba(255, 255, 255, 0.3),     
-                inset 0 2px 4px rgba(255, 255, 255, 0.6),     
-                inset 0 -2px 6px rgba(0, 0, 0, 0.3),          
-                0 20px 40px rgba(0, 0, 0, 0.4);               
+                /* 左侧和顶部高光折射 */
+                inset 1px 1px 2px rgba(255, 255, 255, 0.4),
+                /* 底部和右侧暗角 */
+                inset -1px -1px 2px rgba(0, 0, 0, 0.2),
+                /* 整体极细描边 */
+                0 0 0 1px rgba(255, 255, 255, 0.15),
+                /* 外部悬浮阴影 */
+                0 24px 48px rgba(0, 0, 0, 0.4);
         }
 
+        /* 模拟玻璃表面的流光反光 */
         .liquid-glass::before {
             content: ''; position: absolute; inset: 0; z-index: -1;
-            background: radial-gradient(circle at 30% 20%, rgba(255,255,255,0.2) 0%, transparent 50%);
+            background: linear-gradient(105deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 30%);
             pointer-events: none;
         }
 
-        /* ================= 5. Typography & Avatar ================= */
+        /* ================= 5. Typography (完美贴合截图) ================= */
         .card-title {
-            font-size: 12px; font-weight: 600;
-            color: rgba(255, 255, 255, 0.7);
-            margin-bottom: 20px; letter-spacing: 1.5px; text-transform: uppercase;
+            font-size: 13px; font-weight: 500;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 24px; letter-spacing: 0.5px;
         }
 
         .user-header {
-            display: flex; align-items: center; gap: 16px; margin-bottom: 24px;
+            display: flex; align-items: center; gap: 16px; margin-bottom: 30px;
         }
 
-        /* 👇 圆形头像 (⚪) 无光晕，浅边框，带背景模糊 👇 */
+        /* 圆形头像 (⚪) */
         .avatar-circle {
-            width: 54px; height: 54px;
-            border-radius: 50%; /* 圆形 */
-            
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            
-            border: 1px solid rgba(255, 255, 255, 0.25); 
-            
-            box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.2); 
-            
+            width: 48px; height: 48px;
+            border-radius: 50%; 
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(5px);
             display: flex; justify-content: center; align-items: center;
-            font-size: 20px; font-weight: 500; color: #fff;
+            font-size: 16px; font-weight: 500; color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.2); 
+            box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.3); 
         }
 
-        .user-identity { display: flex; flex-direction: column; gap: 4px; }
-        .user-name { font-size: 18px; font-weight: 600; color: #fff; letter-spacing: 0.5px; }
-        .user-role { font-size: 12px; color: rgba(255, 255, 255, 0.6); }
+        .user-identity { display: flex; flex-direction: column; gap: 2px; }
+        .user-name { font-size: 16px; font-weight: 500; color: #fff; }
+        .user-role { font-size: 12px; color: rgba(255, 255, 255, 0.6); font-weight: 400; }
 
-        /* Data List */
-        .data-list { display: flex; flex-direction: column; gap: 14px; margin-bottom: 24px; }
+        /* Data List (紧凑排版) */
+        .data-list { display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px; }
         .data-row {
             display: flex; justify-content: space-between; align-items: center; font-size: 13px;
         }
-        .label { color: rgba(255, 255, 255, 0.6); font-weight: 400; }
+        .label { color: rgba(255, 255, 255, 0.7); font-weight: 400; }
         .value { 
-            color: rgba(255, 255, 255, 0.95); font-weight: 600; 
+            color: rgba(255, 255, 255, 0.95); font-weight: 400; 
             font-family: ui-monospace, SFMono-Regular, monospace; 
-            text-shadow: 0 1px 2px rgba(0,0,0,0.2);
         }
 
-        /* Button */
+        /* Button (贴图里的浅色透明按键) */
         .btn-logout {
-            width: 100%; padding: 14px;
-            background: rgba(255, 255, 255, 0.08);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 16px; color: #fff;
-            font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.3s;
-            box-shadow: inset 0 1px 1px rgba(255,255,255,0.2);
+            width: 100%; padding: 12px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 12px; color: rgba(255, 255, 255, 0.9);
+            font-size: 12px; font-weight: 500; cursor: pointer; transition: all 0.3s;
             text-transform: uppercase; letter-spacing: 1px;
         }
         .btn-logout:hover {
             background: rgba(255, 255, 255, 0.2);
-            border-color: rgba(255, 255, 255, 0.4);
+            border-color: rgba(255, 255, 255, 0.3);
         }
 
         /* Loading */
-        .loading-box { display: flex; align-items: center; justify-content: center; gap: 8px; height: 80px; }
+        .loading-box { display: flex; align-items: center; justify-content: center; gap: 8px; height: 100px; }
         .spinner {
             width: 14px; height: 14px; border: 1.5px solid rgba(255,255,255,0.2);
             border-top: 1.5px solid #fff; border-radius: 50%;
             animation: spin 1s linear infinite;
         }
         @keyframes spin { 100% { transform: rotate(360deg); } }
-        .loading-text { font-size: 12px; color: rgba(255,255,255,0.6); letter-spacing: 1px; text-transform: uppercase;}
+        .loading-text { font-size: 11px; color: rgba(255,255,255,0.6); letter-spacing: 1px;}
+
+        @media (max-width: 768px) {
+            #intro-screen { justify-content: center; padding-left: 0; text-align: center; }
+            .intro-content { text-align: center; }
+            .intro-title { font-size: 56px; }
+        }
     </style>
 </head>
 <body>
@@ -189,35 +195,34 @@
                 <div class="card-title">User Info</div>
 
                 <div class="user-header">
-                    <!-- 纯圆形头像 -->
                     <div class="avatar-circle" id="userAvatar">...</div>
                     <div class="user-identity">
                         <div class="user-name" id="displayUser">Loading...</div>
-                        <div class="user-role">Authorized User</div>
+                        <div class="user-role">Software Engineer</div>
                     </div>
                 </div>
 
                 <div id="loadingState" class="loading-box">
                     <div class="spinner"></div>
-                    <div class="loading-text">Syncing cloud data...</div>
+                    <div class="loading-text">Syncing data...</div>
                 </div>
 
                 <div class="data-list" id="dataList" style="display: none;">
                     <div class="data-row">
-                        <span class="label">QQ Account</span>
+                        <span class="label">QQ Account:</span>
                         <span class="value" id="displayQQ">-</span>
                     </div>
                     <div class="data-row">
-                        <span class="label">Expiry Date</span>
+                        <span class="label">Expiry Date:</span>
                         <span class="value" id="displayExpiry">-</span>
                     </div>
                     <div class="data-row">
-                        <span class="label">Device ID</span>
+                        <span class="label">Device ID:</span>
                         <span class="value" id="displayDevice">-</span>
                     </div>
                 </div>
 
-                <button class="btn-logout" onclick="logout()">Log out</button>
+                <button class="btn-logout" onclick="logout()">LOG OUT</button>
             </div>
             
         </div>
@@ -228,23 +233,15 @@
         const SUPABASE_ANON_KEY = 'sb_publishable_4-FnUR-78EsCyJk_jyQGYA_Hk0Yr5WJ';
 
         const bgVideo = document.getElementById('bgVideo');
-
-        // Force autoplay
         window.addEventListener('load', () => {
             bgVideo.play().catch(err => {
                 document.body.addEventListener('click', () => { bgVideo.play(); }, { once: true });
             });
         });
-
-        // Seamless loop
         bgVideo.addEventListener('timeupdate', function() {
-            if (this.currentTime > this.duration - 0.2) {
-                this.currentTime = 0;
-                this.play();
-            }
+            if (this.currentTime > this.duration - 0.2) { this.currentTime = 0; this.play(); }
         });
 
-        // Animation Timeline
         window.addEventListener('DOMContentLoaded', () => {
             const introContent = document.getElementById('intro-content');
             const profileGlass = document.getElementById('profile-glass');
