@@ -3,171 +3,242 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>个人主页 - MOMO 授权中心</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;500;700&display=swap" rel="stylesheet">
+    <title>MOMO - 个人主页</title>
     
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=Playfair+Display:ital,wght@0,600;1,600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://fastly.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         
-        body {
-            background-image: url('个人.jpg'); 
-            background-size: cover;
-            background-position: center;
-            background-attachment: fixed;
-            background-color: #050505;
-            min-height: 100vh; display: flex; justify-content: center; align-items: center;
-            padding: 20px; position: relative;
+        body, html { 
+            height: 100%; overflow: hidden; 
+            font-family: 'Inter', sans-serif; 
+            background-color: #000; color: #fff;
         }
 
-        /* 背景四周暗化，中间透亮，凸显玻璃 */
-        body::before {
-            content: ''; position: absolute; inset: 0;
-            background: radial-gradient(circle at center, transparent 0%, rgba(0,0,0,0.7) 100%);
-            z-index: 0;
+        /* ================= 1. 视频背景 ================= */
+        .video-container { position: fixed; inset: 0; z-index: -2; }
+        .video-container video { width: 100%; height: 100%; object-fit: cover; }
+        
+        /* 增强景深：背景适度模糊+边缘暗化 */
+        .video-overlay {
+            position: fixed; inset: 0; z-index: -1;
+            background: radial-gradient(circle at center, rgba(0,0,0,0) 0%, rgba(0,0,0,0.5) 100%);
+            backdrop-filter: blur(8px) brightness(0.8); 
         }
 
-        /* 👇 核心：真正的液态玻璃卡片 👇 */
-        .profile-card {
-            position: relative; z-index: 10;
-            width: 100%; max-width: 600px;
-            
-            /* 极淡的透明白 */
-            background: rgba(255, 255, 255, 0.08); 
-            backdrop-filter: blur(28px) saturate(200%); 
-            -webkit-backdrop-filter: blur(28px) saturate(200%);
-            
-            /* 模拟玻璃厚度的边框 */
-            border: 1px solid transparent;
-            background-clip: padding-box;
-            box-shadow: 
-                inset 0 1px 1px rgba(255, 255, 255, 0.4), /* 顶部高光 */
-                inset 0 -1px 1px rgba(0, 0, 0, 0.2),      /* 底部暗角 */
-                0 30px 60px rgba(0, 0, 0, 0.5),           /* 深色投影 */
-                0 0 0 1px rgba(255, 255, 255, 0.05);      /* 微光描边 */
-                
-            border-radius: 28px; overflow: hidden;
-            animation: fadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        /* 增加一道斜向的光泽，让玻璃更通透 */
-        .profile-card::before {
-            content: '';
+        /* ================= 2. 开场文字 ================= */
+        #intro-screen {
             position: absolute; inset: 0;
-            background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 40%);
-            pointer-events: none; z-index: -1;
+            display: flex; justify-content: flex-start; align-items: center;
+            padding-left: 12vw; z-index: 10; pointer-events: none;
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(30px) scale(0.95); }
-            to { opacity: 1; transform: translateY(0) scale(1); }
+        .intro-content {
+            text-align: left;
+            transform: translateY(-80px); opacity: 0;
+            transition: transform 3.5s cubic-bezier(0.16, 1, 0.3, 1), opacity 2.5s ease-in-out;
         }
 
+        .intro-content.show { transform: translateY(0); opacity: 1; }
+        .intro-content.hide-up {
+            transform: translateY(-80px); opacity: 0;
+            transition: transform 1.5s cubic-bezier(0.16, 1, 0.3, 1), opacity 1s ease-in-out;
+        }
+
+        .intro-small {
+            font-size: 13px; letter-spacing: 8px; text-transform: uppercase;
+            margin-bottom: 20px; color: rgba(255, 255, 255, 0.8); font-weight: 300;
+        }
+
+        .intro-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 72px; line-height: 1.1; font-weight: 600;
+            letter-spacing: 2px; text-shadow: 0 4px 30px rgba(0,0,0,0.4);
+        }
+
+        /* ================= 3. 景深玻璃面板 ================= */
+        #main-panel {
+            position: absolute; inset: 0;
+            display: flex; justify-content: center; align-items: center;
+            padding: 20px; z-index: 5; pointer-events: none;
+        }
+
+        .profile-glass {
+            width: 100%; max-width: 480px;
+            position: relative;
+            
+            /* 👇 核心：极度通透的背景色，让背景折射进来 */
+            background: rgba(15, 25, 40, 0.15); 
+            
+            /* 👇 极高强度的背景模糊，完全吞噬背景杂色，形成纯色景深 */
+            backdrop-filter: blur(50px) saturate(160%);
+            -webkit-backdrop-filter: blur(50px) saturate(160%);
+            
+            /* 👇 去掉生硬的边框，只用微弱的反光 */
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 
+                inset 0 1px 1px rgba(255, 255, 255, 0.3), /* 顶部极光 */
+                inset 0 0 30px rgba(255, 255, 255, 0.02); /* 内部微光 */
+            border-radius: 28px;
+            overflow: hidden;
+            
+            transform: translateY(-100vh); opacity: 0;
+            transition: transform 4.5s cubic-bezier(0.16, 1, 0.3, 1), opacity 2.5s ease-in-out;
+        }
+
+        /* 👇 核心：面板背后的环境光晕，让它像是嵌在背景里，而不是贴在上面 */
+        .profile-glass::before {
+            content: ''; position: absolute; inset: -20px;
+            background: radial-gradient(circle at center, rgba(255,255,255,0.05) 0%, transparent 60%);
+            z-index: -1; pointer-events: none; filter: blur(20px);
+        }
+
+        .profile-glass.slide-down {
+            transform: translateY(0); opacity: 1; pointer-events: auto; 
+        }
+
+        /* 头部 */
         .header {
-            padding: 40px 30px 30px;
-            display: flex; align-items: center; gap: 20px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 35px 35px 25px;
+            display: flex; align-items: center; gap: 20px; position: relative;
         }
 
         .avatar {
-            width: 80px; height: 80px; border-radius: 50%;
-            background: linear-gradient(135deg, #00d2ff, #3a7bd5);
+            width: 64px; height: 64px; border-radius: 50%;
+            /* 头像背景融入环境，半透明 */
+            background: rgba(255, 255, 255, 0.1);
             display: flex; justify-content: center; align-items: center;
-            font-size: 32px; font-weight: bold; color: #fff;
-            box-shadow: 0 10px 20px rgba(0, 210, 255, 0.4), inset 0 2px 4px rgba(255,255,255,0.5);
-            border: 2px solid rgba(255,255,255,0.6);
+            font-size: 24px; font-family: 'Playfair Display', serif; font-weight: 600;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: inset 0 0 15px rgba(255, 255, 255, 0.1);
+            text-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
 
-        .user-info h1 { font-size: 24px; color: #fff; margin-bottom: 5px; font-weight: 700; text-shadow: 0 2px 4px rgba(0,0,0,0.3); }
+        .user-info { flex: 1; }
+        .user-info h1 { 
+            font-size: 22px; color: #fff; font-weight: 500; 
+            margin-bottom: 6px; letter-spacing: 1px;
+            text-shadow: 0 2px 10px rgba(255, 255, 255, 0.2); 
+        }
         
+        /* 状态灯 */
         .status-badge {
             display: inline-flex; align-items: center; gap: 6px;
-            background: rgba(16, 185, 129, 0.15); color: #10b981;
-            padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 600;
-            border: 1px solid rgba(16, 185, 129, 0.3);
+            font-size: 12px; color: rgba(255, 255, 255, 0.6); font-weight: 300;
+            letter-spacing: 0.5px;
         }
-        .status-dot { width: 6px; height: 6px; background: #10b981; border-radius: 50%; box-shadow: 0 0 8px #10b981; }
-
-        .data-grid { padding: 30px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
-
-        /* 数据块也做成磨砂玻璃 */
-        .data-item {
-            background: rgba(0, 0, 0, 0.25); 
-            backdrop-filter: blur(10px);
-            padding: 20px; border-radius: 16px;
-            border: 1px solid rgba(255, 255, 255, 0.08); transition: 0.3s;
-            box-shadow: inset 0 1px 0 rgba(255,255,255,0.1);
+        .status-dot { 
+            width: 5px; height: 5px; background: #10b981; border-radius: 50%; 
+            box-shadow: 0 0 10px #10b981;
+            animation: pulse-green 2s infinite; 
         }
+        @keyframes pulse-green { 0% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(0.8); } 100% { opacity: 1; transform: scale(1); } }
 
-        .data-item:hover {
-            background: rgba(0, 0, 0, 0.4); 
-            border-color: rgba(0, 210, 255, 0.4);
-            transform: translateY(-3px); 
-            box-shadow: 0 10px 20px rgba(0, 210, 255, 0.1), inset 0 1px 0 rgba(255,255,255,0.2);
-        }
-
-        .data-label { font-size: 13px; color: #cbd5e1; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
-        .data-label i { color: #00d2ff; text-shadow: 0 0 8px rgba(0,210,255,0.5); }
-        .data-value { font-size: 16px; color: #fff; font-weight: 600; font-family: monospace; letter-spacing: 1px; word-break: break-all; text-shadow: 0 1px 2px rgba(0,0,0,0.5); }
+        /* 数据列表 */
+        .data-list { padding: 0 35px 15px; position: relative; }
         
-        .skeleton { background: linear-gradient(90deg, rgba(255,255,255,0.05) 25%, rgba(255,255,255,0.15) 50%, rgba(255,255,255,0.05) 75%); background-size: 200% 100%; animation: loading 1.5s infinite; border-radius: 4px; color: transparent !important; }
-        @keyframes loading { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+        .data-row {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 20px 0;
+            /* 极难察觉的透明分割线 */
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+        }
+        .data-row:last-child { border-bottom: none; }
 
-        .actions { padding: 0 30px 30px; }
+        .data-label { 
+            color: rgba(255, 255, 255, 0.55); font-size: 13px; 
+            display: flex; align-items: center; gap: 12px; 
+            font-weight: 300; letter-spacing: 0.5px;
+        }
+        .data-label i { color: rgba(255, 255, 255, 0.7); font-size: 14px; width: 16px; text-align: center; }
+        
+        .data-value { 
+            color: rgba(255, 255, 255, 0.9); font-size: 14px; font-weight: 500;
+            text-align: right; word-break: break-all; max-width: 65%;
+            letter-spacing: 1px;
+            font-family: 'Inter', monospace; 
+            text-shadow: 0 1px 4px rgba(0,0,0,0.3);
+        }
+        
+        /* 骨架屏 */
+        .skeleton { background: rgba(255,255,255,0.1); color: transparent !important; border-radius: 4px; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+
+        /* 底部操作区 */
+        .actions { padding: 10px 35px 35px; position: relative; }
         .btn-logout {
-            width: 100%; padding: 16px; background: rgba(255, 77, 77, 0.15); color: #ff8a8a;
-            border: 1px solid rgba(255, 77, 77, 0.3); border-radius: 14px;
-            font-size: 15px; font-weight: 600; cursor: pointer; transition: 0.3s;
+            width: 100%; padding: 15px; background: transparent; color: rgba(255,255,255,0.6);
+            border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 14px;
+            font-size: 14px; font-weight: 400; cursor: pointer; transition: all 0.4s;
             display: flex; justify-content: center; align-items: center; gap: 8px;
-            backdrop-filter: blur(10px);
+            letter-spacing: 1px;
         }
-        .btn-logout:hover { background: #ff4d4d; color: #fff; box-shadow: 0 10px 20px rgba(255, 77, 77, 0.4); }
+        .btn-logout:hover { 
+            background: rgba(255, 255, 255, 0.08); color: #fff; border-color: rgba(255,255,255,0.3);
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.05);
+        }
 
-        .toast { position: fixed; top: 40px; left: 50%; transform: translate(-50%, -30px); padding: 14px 32px; border-radius: 18px; background: rgba(22, 22, 26, 0.88); backdrop-filter: blur(30px); border: 1px solid rgba(255, 255, 255, 0.08); box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6); color: #fff; font-size: 14px; z-index: 99999; transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1); opacity: 0; pointer-events: none; text-align: center; }
-        .toast.show { transform: translate(-50%, 0); opacity: 1; }
-        .toast.error { border-color: rgba(255, 100, 100, 0.25); color: #ffeded; }
-        
-        @media (max-width: 500px) { .data-grid { grid-template-columns: 1fr; } .header { flex-direction: column; text-align: center; } }
+        @media (max-width: 768px) {
+            #intro-screen { justify-content: center; padding-left: 0; text-align: center; }
+            .intro-content { text-align: center; }
+            .intro-title { font-size: 48px; }
+            .header { flex-direction: column; text-align: center; gap: 16px; }
+        }
     </style>
 </head>
 <body>
 
-    <div id="toast" class="toast">提示信息</div>
+    <div class="video-container">
+        <video src="bg.mp4" autoplay loop muted playsinline></video>
+    </div>
+    <div class="video-overlay"></div>
 
-    <div class="profile-card">
-        <div class="header">
-            <div class="avatar" id="userAvatar">...</div>
-            <div class="user-info">
-                <h1 id="displayUser" class="skeleton" style="width: 120px;">加载中...</h1>
-                <div class="status-badge">
-                    <div class="status-dot"></div> 账号正常
+    <!-- 开场文字 -->
+    <div id="intro-screen">
+        <div class="intro-content" id="intro-content">
+            <div class="intro-small">Feel the world slow down</div>
+            <div class="intro-title">Closer to<br>the ocean.</div>
+        </div>
+    </div>
+
+    <!-- 面板 -->
+    <div id="main-panel">
+        <div class="profile-glass" id="profile-glass">
+            <div class="header">
+                <div class="avatar" id="userAvatar">...</div>
+                <div class="user-info">
+                    <h1 id="displayUser" class="skeleton" style="width: 100px;">加载中...</h1>
+                    <div class="status-badge">
+                        <div class="status-dot"></div> 授权状态正常
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <div class="data-grid">
-            <div class="data-item">
-                <div class="data-label"><i class="fab fa-qq"></i> 绑定 QQ</div>
-                <div class="data-value skeleton" id="displayQQ">加载中...</div>
+            <div class="data-list">
+                <div class="data-row">
+                    <div class="data-label"><i class="fab fa-qq"></i> 绑定 QQ</div>
+                    <div class="data-value skeleton" id="displayQQ">加载中...</div>
+                </div>
+                <div class="data-row">
+                    <div class="data-label"><i class="far fa-calendar-alt"></i> 到期时间</div>
+                    <div class="data-value skeleton" id="displayExpiry">加载中...</div>
+                </div>
+                <div class="data-row">
+                    <div class="data-label"><i class="fas fa-fingerprint"></i> 专属设备码</div>
+                    <div class="data-value skeleton" id="displayDevice">加载中...</div>
+                </div>
             </div>
 
-            <div class="data-item">
-                <div class="data-label"><i class="fas fa-clock"></i> 到期时间</div>
-                <div class="data-value skeleton" id="displayExpiry" style="color: #f59e0b !important; text-shadow: 0 0 10px rgba(245,158,11,0.4);">加载中...</div>
+            <div class="actions">
+                <button class="btn-logout" onclick="logout()">
+                    <i class="fas fa-sign-out-alt" style="opacity: 0.6;"></i> 退出当前账号
+                </button>
             </div>
-
-            <div class="data-item" style="grid-column: 1 / -1;">
-                <div class="data-label"><i class="fas fa-mobile-alt"></i> 当前设备码 (Device ID)</div>
-                <div class="data-value skeleton" id="displayDevice">加载中...</div>
-            </div>
-        </div>
-
-        <div class="actions">
-            <button class="btn-logout" onclick="logout()">
-                <i class="fas fa-sign-out-alt"></i> 退出当前账号
-            </button>
         </div>
     </div>
 
@@ -175,13 +246,24 @@
         const SUPABASE_URL = 'https://ifrlrkjmqheivdlainur.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_4-FnUR-78EsCyJk_jyQGYA_Hk0Yr5WJ';
 
-        function showToast(msg, type = 'error') {
-            const toast = document.getElementById('toast');
-            toast.innerText = msg; toast.className = 'toast show ' + type;
-            setTimeout(() => { toast.classList.remove('show'); }, 4000);
-        }
+        window.addEventListener('DOMContentLoaded', () => {
+            const introContent = document.getElementById('intro-content');
+            const profileGlass = document.getElementById('profile-glass');
 
-        window.onload = async () => {
+            setTimeout(() => { introContent.classList.add('show'); }, 500);
+
+            setTimeout(() => {
+                introContent.classList.remove('show');
+                introContent.classList.add('hide-up'); 
+            }, 4500);
+
+            setTimeout(() => {
+                profileGlass.classList.add('slide-down');
+                loadUserData(); 
+            }, 6000);
+        });
+
+        async function loadUserData() {
             const username = localStorage.getItem("momo_user");
             const deviceFp = localStorage.getItem("device_fp");
 
@@ -195,7 +277,7 @@
             document.getElementById("userAvatar").innerText = username.charAt(0).toUpperCase();
 
             document.getElementById("displayDevice").classList.remove("skeleton");
-            document.getElementById("displayDevice").innerText = deviceFp || "未绑定设备";
+            document.getElementById("displayDevice").innerText = deviceFp || "未绑定";
 
             try {
                 const response = await fetch(`${SUPABASE_URL}/functions/v1/get-profile`, {
@@ -217,7 +299,6 @@
                 } else {
                     document.getElementById("displayQQ").innerText = "获取失败";
                     document.getElementById("displayExpiry").innerText = "获取失败";
-                    showToast(result.message || "获取资料失败", "error");
                 }
             } catch (error) {
                 console.error("获取资料异常:", error);
@@ -225,7 +306,6 @@
                 document.getElementById("displayExpiry").classList.remove("skeleton");
                 document.getElementById("displayQQ").innerText = "网络异常";
                 document.getElementById("displayExpiry").innerText = "网络异常";
-                showToast("网络请求失败，请刷新重试", "error");
             }
         }
 
