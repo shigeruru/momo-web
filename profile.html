@@ -1,13 +1,13 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MOMO - 个人主页</title>
+    <title>MOMO - Dashboard</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,600;1,600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://fastly.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
@@ -16,207 +16,158 @@
         
         html, body { 
             height: 100%; width: 100%; overflow: hidden; 
-            font-family: 'Inter', sans-serif; background-color: #000; color: #fff;
+            font-family: 'Inter', -apple-system, sans-serif; 
+            background-color: #000; color: #fff;
             -webkit-font-smoothing: antialiased;
         }
 
-        /* ================= 1. 视频背景 ================= */
+        /* ================= 1. Video Background ================= */
         .video-container { position: fixed; inset: 0; z-index: 0; background: #000; }
         .video-container video { width: 100%; height: 100%; object-fit: cover; }
         
         .video-overlay {
             position: fixed; inset: 0; z-index: 1;
-            background: linear-gradient(to right, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.1) 100%);
+            background: rgba(0, 0, 0, 0.15);
             pointer-events: none;
         }
 
-        /* ================= 2. 开场文字 ================= */
+        /* ================= 2. Intro Animation ================= */
         #intro-screen {
-            position: absolute; inset: 0; display: flex; align-items: center;
-            padding-left: 10vw; z-index: 10; pointer-events: none;
+            position: absolute; inset: 0; display: flex; flex-direction: column;
+            justify-content: center; align-items: center; z-index: 10; pointer-events: none;
         }
-
         .intro-content {
-            text-align: left; transform: translateY(-40px); opacity: 0;
+            text-align: center; transform: translateY(-40px); opacity: 0;
             transition: transform 3.5s cubic-bezier(0.16, 1, 0.3, 1), opacity 2.5s ease-in-out;
         }
-
         .intro-content.show { transform: translateY(0); opacity: 1; }
         .intro-content.hide-up {
             transform: translateY(-40px); opacity: 0;
             transition: transform 1.5s cubic-bezier(0.16, 1, 0.3, 1), opacity 1s ease-in-out;
         }
-
+        
         .intro-small {
             font-size: 12px; letter-spacing: 12px; text-transform: uppercase;
             margin-bottom: 20px; color: #000; font-weight: 600;
-            text-shadow: 0 0 20px rgba(255, 255, 255, 1);
         }
-
+        
         .intro-title {
             font-family: 'Playfair Display', serif;
             font-size: 80px; line-height: 1.1; font-weight: 600;
-            letter-spacing: 0px; color: #000; 
-            text-shadow: 0 0 30px rgba(255, 255, 255, 1);
+            color: #000; 
         }
 
-        /* ================= 3. 物理级液态玻璃 ================= */
+        /* ================= 3. Centered Dashboard ================= */
         #main-panel {
             position: absolute; inset: 0;
-            display: flex; align-items: center;
-            padding-left: 10vw; z-index: 5; pointer-events: none;
+            display: flex; justify-content: center; align-items: center;
+            z-index: 5; pointer-events: none;
         }
-
+        
         .dashboard {
-            width: 100%; max-width: 500px; position: relative;
+            width: 90%; max-width: 340px; 
             transform: translateY(-100vh); opacity: 0;
             transition: transform 4.5s cubic-bezier(0.16, 1, 0.3, 1), opacity 2.5s ease-in-out;
         }
-
         .dashboard.slide-down { transform: translateY(0); opacity: 1; pointer-events: auto; }
 
-        /* 核心：液态玻璃容器 */
-        .liquid-container {
+        /* ================= 4. Liquid Glass ================= */
+        .liquid-glass {
             position: relative;
-            padding: 40px 45px;
-            border-radius: 40px; /* 大圆角看起来更像水滴/液态 */
+            padding: 24px;
+            border-radius: 32px; 
             overflow: hidden;
-            z-index: 1;
+            isolation: isolate;
             
-            /* 1. 基础背景：极低透明度的深色 + 极高的饱和模糊 */
-            background: rgba(20, 25, 35, 0.2);
-            backdrop-filter: blur(40px) saturate(250%) contrast(120%);
-            -webkit-backdrop-filter: blur(40px) saturate(250%) contrast(120%);
+            backdrop-filter: blur(20px) saturate(300%) contrast(120%) brightness(1.1);
+            -webkit-backdrop-filter: blur(20px) saturate(300%) contrast(120%) brightness(1.1);
             
-            /* 2. 物理边缘厚度：多重内阴影 */
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.05) 100%);
+            
             box-shadow: 
-                inset 0 0 0 1px rgba(255, 255, 255, 0.1), /* 极细描边 */
-                inset 0 0 20px rgba(255, 255, 255, 0.15), /* 内部泛白 */
-                inset 0 4px 10px rgba(255, 255, 255, 0.3), /* 顶部高光折射 */
-                inset 0 -4px 10px rgba(0, 0, 0, 0.2), /* 底部暗角 */
-                0 30px 60px rgba(0, 0, 0, 0.4); /* 外部环境阴影 */
-            
-            /* 3. 引入 SVG 扭曲滤镜（让背景产生液态水波感） */
-            /* 注意：如果手机端不支持 url 滤镜，会自动回退到普通的背景模糊 */
+                inset 0 0 0 1px rgba(255, 255, 255, 0.3),     
+                inset 0 2px 4px rgba(255, 255, 255, 0.6),     
+                inset 0 -2px 6px rgba(0, 0, 0, 0.3),          
+                0 20px 40px rgba(0, 0, 0, 0.4);               
         }
 
-        /* 液态高光反光层 */
-        .liquid-container::before {
-            content: ''; position: absolute; inset: 0;
-            background: 
-                linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 40%),
-                radial-gradient(circle at 80% 20%, rgba(255,255,255,0.1) 0%, transparent 30%);
+        .liquid-glass::before {
+            content: ''; position: absolute; inset: 0; z-index: -1;
+            background: radial-gradient(circle at 30% 20%, rgba(255,255,255,0.2) 0%, transparent 50%);
             pointer-events: none;
-            z-index: -1;
         }
 
-        /* 动态流光（可选的呼吸灯效果） */
-        .liquid-container::after {
-            content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
-            background: conic-gradient(from 180deg at 50% 50%, rgba(255,255,255,0) 0deg, rgba(255,255,255,0.05) 180deg, rgba(255,255,255,0) 360deg);
-            animation: rotateLight 10s linear infinite;
-            pointer-events: none; z-index: -1;
+        /* ================= 5. Typography & Avatar ================= */
+        .card-title {
+            font-size: 12px; font-weight: 600;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 20px; letter-spacing: 1.5px; text-transform: uppercase;
         }
 
-        @keyframes rotateLight {
-            100% { transform: rotate(360deg); }
+        .user-header {
+            display: flex; align-items: center; gap: 16px; margin-bottom: 24px;
         }
 
-        /* 内容区排版 */
-        .greeting {
-            font-size: 12px; color: rgba(255,255,255,0.6); 
-            text-transform: uppercase; letter-spacing: 4px; margin-bottom: 10px;
+        /* 👇 圆形头像 (⚪) 无光晕，浅边框，带背景模糊 👇 */
+        .avatar-circle {
+            width: 54px; height: 54px;
+            border-radius: 50%; /* 圆形 */
+            
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            
+            border: 1px solid rgba(255, 255, 255, 0.25); 
+            
+            box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.2); 
+            
+            display: flex; justify-content: center; align-items: center;
+            font-size: 20px; font-weight: 500; color: #fff;
         }
 
-        .user-name {
-            font-family: 'Playfair Display', serif;
-            font-size: 52px; font-weight: 400; line-height: 1;
-            color: #fff; letter-spacing: 1px;
-            text-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        .user-identity { display: flex; flex-direction: column; gap: 4px; }
+        .user-name { font-size: 18px; font-weight: 600; color: #fff; letter-spacing: 0.5px; }
+        .user-role { font-size: 12px; color: rgba(255, 255, 255, 0.6); }
+
+        /* Data List */
+        .data-list { display: flex; flex-direction: column; gap: 14px; margin-bottom: 24px; }
+        .data-row {
+            display: flex; justify-content: space-between; align-items: center; font-size: 13px;
+        }
+        .label { color: rgba(255, 255, 255, 0.6); font-weight: 400; }
+        .value { 
+            color: rgba(255, 255, 255, 0.95); font-weight: 600; 
+            font-family: ui-monospace, SFMono-Regular, monospace; 
+            text-shadow: 0 1px 2px rgba(0,0,0,0.2);
         }
 
-        .status-tag {
-            display: inline-flex; align-items: center; gap: 8px;
-            margin-top: 15px; font-size: 12px; color: rgba(255,255,255,0.7);
-            letter-spacing: 1px;
+        /* Button */
+        .btn-logout {
+            width: 100%; padding: 14px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 16px; color: #fff;
+            font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.3s;
+            box-shadow: inset 0 1px 1px rgba(255,255,255,0.2);
+            text-transform: uppercase; letter-spacing: 1px;
         }
-        .status-tag::before {
-            content: ''; width: 6px; height: 6px; background: #10b981;
-            border-radius: 50%; box-shadow: 0 0 10px #10b981;
+        .btn-logout:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.4);
         }
 
-        /* 极简加载 */
-        .loading-box { display: flex; align-items: center; gap: 12px; margin-top: 30px; }
+        /* Loading */
+        .loading-box { display: flex; align-items: center; justify-content: center; gap: 8px; height: 80px; }
         .spinner {
-            width: 16px; height: 16px; border: 1.5px solid rgba(255,255,255,0.2);
+            width: 14px; height: 14px; border: 1.5px solid rgba(255,255,255,0.2);
             border-top: 1.5px solid #fff; border-radius: 50%;
             animation: spin 1s linear infinite;
         }
         @keyframes spin { 100% { transform: rotate(360deg); } }
-        .loading-text { font-size: 12px; color: rgba(255,255,255,0.5); letter-spacing: 1px; }
-
-        /* 数据模块 */
-        .data-capsules { display: flex; flex-direction: column; gap: 12px; margin-top: 30px; }
-        
-        .capsule {
-            display: flex; align-items: center; justify-content: space-between;
-            padding: 16px 20px;
-            background: rgba(255, 255, 255, 0.03);
-            border-radius: 16px;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            /* 胶囊内部也有极淡的玻璃感 */
-            box-shadow: inset 0 1px 0 rgba(255,255,255,0.1);
-            transition: 0.3s;
-        }
-        .capsule:hover {
-            background: rgba(255, 255, 255, 0.08);
-            border-color: rgba(255, 255, 255, 0.15);
-        }
-
-        .cap-label { 
-            font-size: 12px; color: rgba(255,255,255,0.5); 
-            letter-spacing: 2px; display: flex; align-items: center; gap: 10px;
-        }
-        .cap-label i { font-size: 14px; color: #fff; opacity: 0.8; }
-        
-        .cap-value { 
-            font-size: 14px; color: #fff; font-weight: 400;
-            font-family: monospace; letter-spacing: 1px;
-        }
-
-        /* 底部操作 */
-        .actions { margin-top: 30px; }
-        .btn-logout {
-            width: 100%; padding: 16px; background: transparent; color: rgba(255,255,255,0.7);
-            border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 50px;
-            font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.3s;
-            letter-spacing: 2px; text-transform: uppercase;
-        }
-        .btn-logout:hover { 
-            background: #fff; color: #000; border-color: #fff;
-        }
-
-        /* 手机端适配 */
-        @media (max-width: 768px) {
-            .video-overlay { background: rgba(0,0,0,0.5); }
-            #intro-screen { justify-content: center; padding-left: 0; text-align: center; }
-            .intro-title { font-size: 56px; }
-            #main-panel { justify-content: center; padding-left: 0; padding: 20px; }
-            .dashboard { text-align: left; }
-            .user-name { font-size: 44px; }
-            .liquid-container { padding: 30px; border-radius: 30px; }
-        }
+        .loading-text { font-size: 12px; color: rgba(255,255,255,0.6); letter-spacing: 1px; text-transform: uppercase;}
     </style>
 </head>
 <body>
-
-    <!-- SVG 水波扭曲滤镜 -->
-    <svg style="display: none;">
-        <filter id="liquid-distortion">
-            <feTurbulence type="fractalNoise" baseFrequency="0.01 0.01" numOctaves="1" result="noise" />
-            <feDisplacementMap in="SourceGraphic" in2="noise" scale="20" xChannelSelector="R" yChannelSelector="G" />
-        </filter>
-    </svg>
 
     <div class="video-container">
         <video id="bgVideo" src="bg.mp4" poster="bg.jpg" autoplay loop muted playsinline></video>
@@ -230,38 +181,43 @@
         </div>
     </div>
 
-    <!-- 液态玻璃面板 -->
     <div id="main-panel">
         <div class="dashboard" id="profile-glass">
             
-            <div class="liquid-container">
-                <div class="greeting">Welcome back</div>
-                <div class="user-name" id="displayUser">加载中...</div>
-                <div class="status-tag">System Active</div>
+            <div class="liquid-glass">
+                
+                <div class="card-title">User Info</div>
+
+                <div class="user-header">
+                    <!-- 纯圆形头像 -->
+                    <div class="avatar-circle" id="userAvatar">...</div>
+                    <div class="user-identity">
+                        <div class="user-name" id="displayUser">Loading...</div>
+                        <div class="user-role">Authorized User</div>
+                    </div>
+                </div>
 
                 <div id="loadingState" class="loading-box">
                     <div class="spinner"></div>
-                    <div class="loading-text">正在同步云端凭证...</div>
+                    <div class="loading-text">Syncing cloud data...</div>
                 </div>
 
-                <div class="data-capsules" id="dataList" style="display: none;">
-                    <div class="capsule">
-                        <div class="cap-label"><i class="fab fa-qq"></i> QQ</div>
-                        <div class="cap-value" id="displayQQ">-</div>
+                <div class="data-list" id="dataList" style="display: none;">
+                    <div class="data-row">
+                        <span class="label">QQ Account</span>
+                        <span class="value" id="displayQQ">-</span>
                     </div>
-                    <div class="capsule">
-                        <div class="cap-label"><i class="far fa-calendar-alt"></i> EXPIRY</div>
-                        <div class="cap-value" id="displayExpiry">-</div>
+                    <div class="data-row">
+                        <span class="label">Expiry Date</span>
+                        <span class="value" id="displayExpiry">-</span>
                     </div>
-                    <div class="capsule">
-                        <div class="cap-label"><i class="fas fa-fingerprint"></i> DEVICE</div>
-                        <div class="cap-value" id="displayDevice">-</div>
+                    <div class="data-row">
+                        <span class="label">Device ID</span>
+                        <span class="value" id="displayDevice">-</span>
                     </div>
                 </div>
 
-                <div class="actions">
-                    <button class="btn-logout" onclick="logout()">Log out</button>
-                </div>
+                <button class="btn-logout" onclick="logout()">Log out</button>
             </div>
             
         </div>
@@ -272,23 +228,32 @@
         const SUPABASE_ANON_KEY = 'sb_publishable_4-FnUR-78EsCyJk_jyQGYA_Hk0Yr5WJ';
 
         const bgVideo = document.getElementById('bgVideo');
+
+        // Force autoplay
         window.addEventListener('load', () => {
             bgVideo.play().catch(err => {
                 document.body.addEventListener('click', () => { bgVideo.play(); }, { once: true });
             });
         });
 
+        // Seamless loop
+        bgVideo.addEventListener('timeupdate', function() {
+            if (this.currentTime > this.duration - 0.2) {
+                this.currentTime = 0;
+                this.play();
+            }
+        });
+
+        // Animation Timeline
         window.addEventListener('DOMContentLoaded', () => {
             const introContent = document.getElementById('intro-content');
             const profileGlass = document.getElementById('profile-glass');
 
             setTimeout(() => { introContent.classList.add('show'); }, 500);
-
             setTimeout(() => {
                 introContent.classList.remove('show');
                 introContent.classList.add('hide-up'); 
             }, 4500);
-
             setTimeout(() => {
                 profileGlass.classList.add('slide-down');
                 loadUserData(); 
@@ -301,7 +266,8 @@
             if (!username) { window.location.href = 'index.html'; return; }
 
             document.getElementById("displayUser").innerText = username;
-            document.getElementById("displayDevice").innerText = deviceFp || "未绑定";
+            document.getElementById("userAvatar").innerText = username.charAt(0).toUpperCase();
+            document.getElementById("displayDevice").innerText = deviceFp || "Not Bound";
 
             try {
                 const response = await fetch(`${SUPABASE_URL}/functions/v1/get-profile`, {
@@ -312,15 +278,15 @@
                 const result = await response.json();
 
                 if (result.success && result.data) {
-                    document.getElementById("displayQQ").innerText = result.data.qq || "未绑定";
-                    document.getElementById("displayExpiry").innerText = result.data.expiry_date || "长期有效";
+                    document.getElementById("displayQQ").innerText = result.data.qq || "Not Bound";
+                    document.getElementById("displayExpiry").innerText = result.data.expiry_date || "Lifetime";
                 } else {
-                    document.getElementById("displayQQ").innerText = "获取失败";
-                    document.getElementById("displayExpiry").innerText = "获取失败";
+                    document.getElementById("displayQQ").innerText = "Fetch Failed";
+                    document.getElementById("displayExpiry").innerText = "Fetch Failed";
                 }
             } catch (error) {
-                document.getElementById("displayQQ").innerText = "网络异常";
-                document.getElementById("displayExpiry").innerText = "网络异常";
+                document.getElementById("displayQQ").innerText = "Network Error";
+                document.getElementById("displayExpiry").innerText = "Network Error";
             } finally {
                 document.getElementById('loadingState').style.display = 'none';
                 document.getElementById('dataList').style.display = 'flex';
@@ -328,7 +294,7 @@
         }
 
         function logout() {
-            if(confirm("确定要退出当前系统吗？")) {
+            if(confirm("Are you sure you want to log out?")) {
                 localStorage.removeItem("momo_user");
                 window.location.href = 'index.html';
             }
