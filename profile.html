@@ -26,7 +26,8 @@
         
         .video-overlay {
             position: fixed; inset: 0; z-index: 1;
-            background: rgba(0, 0, 0, 0.3); /* 压暗背景，凸显高斯模糊的白玻璃 */
+            /* 给整个背景加上极轻微的黑纱，让亮色的玻璃更凸显 */
+            background: rgba(0, 0, 0, 0.15);
             pointer-events: none;
         }
 
@@ -71,45 +72,46 @@
         }
         .dashboard.slide-down { transform: translateY(0) translateZ(0); opacity: 1; pointer-events: auto; }
 
-        /* ================= 4. 强高斯模糊磨砂玻璃 ================= */
+        /* ================= 4. 极致高斯磨砂冰晶玻璃 ================= */
         .liquid-glass {
             position: relative;
-            padding: 26px 24px;
-            border-radius: 22px; 
+            padding: 28px 24px;
+            border-radius: 24px; 
             overflow: hidden;
             isolation: isolate;
             
-            /* 👈 核心：30px 强高斯模糊，背景彻底化开 */
-            backdrop-filter: blur(30px) saturate(180%) contrast(110%);
-            -webkit-backdrop-filter: blur(30px) saturate(180%) contrast(110%);
+            /* 👈 40px 重度高斯模糊，加上 120% 饱和度防止背景发灰 */
+            backdrop-filter: blur(40px) saturate(120%) contrast(110%);
+            -webkit-backdrop-filter: blur(40px) saturate(120%) contrast(110%);
             
-            /* 微微泛白的玻璃底色 */
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.05) 100%);
+            /* 👈 极淡的暖白底色，中和海底的深蓝，让文字更清晰 */
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.08) 100%);
             
-            /* 物理光学切面边缘 */
-            border: 1px solid rgba(255, 255, 255, 0.25);
+            /* 👈 物理光学边缘：多层内阴影模拟玻璃厚度的折光 */
+            border: 1px solid rgba(255, 255, 255, 0.15);
             box-shadow: 
-                inset 1px 1px 2px rgba(255, 255, 255, 0.6),  
-                inset -1px -1px 2px rgba(0, 0, 0, 0.3),      
-                0 20px 40px rgba(0, 0, 0, 0.4);              
+                inset 0 1px 1px rgba(255, 255, 255, 0.7),   /* 顶部锐利切面 */
+                inset 0 -1px 2px rgba(0, 0, 0, 0.2),        /* 底部暗角 */
+                inset 1px 0 1px rgba(255, 255, 255, 0.3),   /* 左侧微光 */
+                0 24px 50px rgba(0, 0, 0, 0.5);             /* 外部厚重投影 */
         }
 
-        /* 表面斜向流光 */
+        /* 表面斜向流光（45度高光） */
         .liquid-glass::before {
             content: '';
             position: absolute;
             inset: 0;
-            background: linear-gradient(105deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 30%);
+            background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 40%, rgba(255,255,255,0) 60%, rgba(255,255,255,0.05) 100%);
             pointer-events: none;
             z-index: -1;
         }
 
-        /* ================= 5. Typography (原汁原味截图排版) ================= */
+        /* ================= 5. Typography ================= */
         .card-title {
-            font-size: 14px; font-weight: 500;
+            font-size: 15px; font-weight: 500;
             color: #fff;
             margin-bottom: 24px;
-            text-shadow: 0 1px 3px rgba(0,0,0,0.4); 
+            text-shadow: 0 1px 4px rgba(0,0,0,0.4); 
         }
 
         .user-header {
@@ -117,33 +119,33 @@
         }
 
         .avatar-circle {
-            width: 48px; height: 48px; 
+            width: 52px; height: 52px; 
             border-radius: 50%; 
             background: rgba(255, 255, 255, 0.1);
             overflow: hidden;
             display: flex; justify-content: center; align-items: center;
-            border: 1px solid rgba(255, 255, 255, 0.2); 
-            box-shadow: inset 0 1px 2px rgba(255,255,255,0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3); 
+            box-shadow: inset 0 1px 3px rgba(255,255,255,0.2);
         }
 
         .avatar-circle img {
             width: 100%; height: 100%; object-fit: cover;
         }
 
-        .user-identity { display: flex; flex-direction: column; gap: 2px; }
+        .user-identity { display: flex; flex-direction: column; gap: 4px; }
         .user-name { 
-            font-size: 16px; font-weight: 500; color: #fff; 
-            text-shadow: 0 1px 3px rgba(0,0,0,0.4); 
+            font-size: 18px; font-weight: 600; color: #fff; 
+            text-shadow: 0 1px 4px rgba(0,0,0,0.5); 
         }
         .user-role { 
-            font-size: 12px; color: rgba(255, 255, 255, 0.8); 
+            font-size: 13px; color: rgba(255, 255, 255, 0.8); 
         }
 
-        /* 👇 数据列表：无卡片，纯文字对齐 👇 */
-        .data-list { display: flex; flex-direction: column; gap: 14px; margin-bottom: 26px; }
+        /* 数据列表 */
+        .data-list { display: flex; flex-direction: column; gap: 16px; margin-bottom: 28px; }
         
         .data-row {
-            display: flex; justify-content: space-between; align-items: center; font-size: 13px;
+            display: flex; justify-content: space-between; align-items: center; font-size: 14px;
             clip-path: inset(0 100% 0 0);
             opacity: 0;
             transition: clip-path 1.2s cubic-bezier(0.25, 1, 0.5, 1), opacity 1s ease-in-out;
@@ -151,29 +153,30 @@
         .data-row.reveal { clip-path: inset(0 0 0 0); opacity: 1; }
 
         .label { 
-            color: rgba(255, 255, 255, 0.7); 
+            color: rgba(255, 255, 255, 0.85); /* 文字亮度提高 */
             font-weight: 400; 
-            text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+            text-shadow: 0 1px 3px rgba(0,0,0,0.4);
         }
         .value { 
             color: #fff; 
             font-weight: 500; 
             font-family: ui-monospace, SFMono-Regular, monospace; 
-            text-shadow: 0 1px 2px rgba(0,0,0,0.4);
+            text-shadow: 0 1px 3px rgba(0,0,0,0.5);
         }
 
         /* 底部按钮 */
         .btn-logout {
-            width: 100%; padding: 12px;
-            background: rgba(255, 255, 255, 0.1);
+            width: 100%; padding: 14px;
+            background: rgba(255, 255, 255, 0.08);
             border: 1px solid rgba(255, 255, 255, 0.2); 
-            border-radius: 12px; color: #fff;
-            font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.3s;
+            border-radius: 14px; color: #fff;
+            font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.3s;
             letter-spacing: 1px;
             box-shadow: inset 0 1px 1px rgba(255,255,255,0.1);
+            text-shadow: 0 1px 2px rgba(0,0,0,0.3);
         }
         .btn-logout:hover {
-            background: rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.15);
             border-color: rgba(255, 255, 255, 0.4);
         }
 
@@ -185,7 +188,7 @@
             animation: spin 1s linear infinite;
         }
         @keyframes spin { 100% { transform: rotate(360deg); } }
-        .loading-text { font-size: 12px; color: rgba(255,255,255,0.9); letter-spacing: 1px;}
+        .loading-text { font-size: 13px; color: rgba(255,255,255,0.9); letter-spacing: 1px;}
 
         @media (max-width: 768px) {
             #intro-screen { justify-content: center; padding-left: 0; text-align: center; }
