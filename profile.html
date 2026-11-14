@@ -14,31 +14,36 @@
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
-        body, html { 
-            height: 100%; overflow: hidden; 
+        html, body { 
+            height: 100%; width: 100%;
+            overflow: hidden; 
             font-family: 'Inter', sans-serif; 
             background-color: #000; color: #fff;
         }
 
-        /* ================= 1. 视频背景 ================= */
-        .video-container { position: fixed; inset: 0; z-index: -2; }
+        /* ================= 1. 视频背景 (最底层) ================= */
+        .video-container { 
+            position: fixed; 
+            top: 0; left: 0; width: 100vw; height: 100vh; 
+            z-index: 0; /* 改为 0，确保在黑色背景之上 */
+            background-color: #000;
+        }
         
         .video-container video { 
             width: 100%; height: 100%; object-fit: cover; 
-            /* 如果视频没加载出来，优先显示 bg.jpg */
-            background-image: url('bg.jpg');
-            background-size: cover;
-            background-position: center;
         }
         
-        /* 调淡了遮罩，让海底的蓝色更通透 */
+        /* ================= 2. 遮罩层 (视频之上) ================= */
         .video-overlay {
-            position: fixed; inset: 0; z-index: -1;
-            background: radial-gradient(circle at center, rgba(0,0,0,0) 0%, rgba(0,0,0,0.4) 100%);
-            backdrop-filter: blur(4px) brightness(0.85); 
+            position: fixed; 
+            top: 0; left: 0; width: 100vw; height: 100vh; 
+            z-index: 1; /* 在视频上面 */
+            background: radial-gradient(circle at center, rgba(0,0,0,0) 0%, rgba(0,0,0,0.5) 100%);
+            backdrop-filter: blur(4px); 
+            pointer-events: none;
         }
 
-        /* ================= 2. 开场文字 ================= */
+        /* ================= 3. 开场文字 ================= */
         #intro-screen {
             position: absolute; inset: 0;
             display: flex; justify-content: flex-start; align-items: center;
@@ -68,7 +73,7 @@
             letter-spacing: 2px; text-shadow: 0 4px 30px rgba(0,0,0,0.5);
         }
 
-        /* ================= 3. 景深玻璃面板 ================= */
+        /* ================= 4. 景深玻璃面板 ================= */
         #main-panel {
             position: absolute; inset: 0;
             display: flex; justify-content: center; align-items: center;
@@ -78,15 +83,9 @@
         .profile-glass {
             width: 100%; max-width: 480px;
             position: relative;
-            
-            /* 极其纯净的深海蓝透明背景 */
             background: rgba(10, 30, 50, 0.2); 
-            
-            /* 超强毛玻璃，吃掉背景细节 */
             backdrop-filter: blur(40px) saturate(150%);
             -webkit-backdrop-filter: blur(40px) saturate(150%);
-            
-            /* 无边框感，仅顶部微光 */
             border: 1px solid rgba(255, 255, 255, 0.1);
             box-shadow: 
                 inset 0 1px 1px rgba(255, 255, 255, 0.3), 
@@ -131,7 +130,6 @@
             text-shadow: 0 2px 10px rgba(255, 255, 255, 0.2); 
         }
         
-        /* 状态灯 */
         .status-badge {
             display: inline-flex; align-items: center; gap: 6px;
             font-size: 12px; color: rgba(255, 255, 255, 0.6); font-weight: 300;
@@ -168,7 +166,6 @@
             text-shadow: 0 1px 4px rgba(0,0,0,0.3);
         }
         
-        /* 骨架屏 */
         .skeleton { background: rgba(255,255,255,0.1); color: transparent !important; border-radius: 4px; animation: pulse 1.5s infinite; }
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
 
@@ -196,10 +193,12 @@
 </head>
 <body>
 
+    <!-- 视频背景 -->
     <div class="video-container">
-        <!-- 加上了 id 方便 JS 强制播放，并设置 poster 兜底 -->
         <video id="bgVideo" src="bg.mp4" poster="bg.jpg" autoplay loop muted playsinline></video>
     </div>
+    
+    <!-- 遮罩层 -->
     <div class="video-overlay"></div>
 
     <!-- 开场文字 -->
@@ -250,12 +249,17 @@
         const SUPABASE_URL = 'https://ifrlrkjmqheivdlainur.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_4-FnUR-78EsCyJk_jyQGYA_Hk0Yr5WJ';
 
-        // 👇 强制让视频播放的逻辑 👇
+        // 强制让视频播放的逻辑
         const bgVideo = document.getElementById('bgVideo');
-        bgVideo.play().catch(error => {
-            console.log("自动播放被拦截，尝试静音重试:", error);
-            bgVideo.muted = true;
-            bgVideo.play();
+        
+        window.addEventListener('load', () => {
+            bgVideo.play().catch(err => {
+                console.log("自动播放被拦截，等待用户点击");
+                // 用户点击屏幕任何地方时，强制播放
+                document.body.addEventListener('click', () => {
+                    bgVideo.play();
+                }, { once: true });
+            });
         });
 
         window.addEventListener('DOMContentLoaded', () => {
