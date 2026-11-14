@@ -26,7 +26,7 @@
         
         .video-overlay {
             position: fixed; inset: 0; z-index: 1;
-            background: linear-gradient(to right, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.1) 100%);
+            background: linear-gradient(to right, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.1) 100%);
             pointer-events: none;
         }
 
@@ -60,7 +60,7 @@
             text-shadow: 0 0 30px rgba(255, 255, 255, 1);
         }
 
-        /* ================= 3. 非对称高级仪表盘 ================= */
+        /* ================= 3. 物理级液态玻璃 ================= */
         #main-panel {
             position: absolute; inset: 0;
             display: flex; align-items: center;
@@ -68,25 +68,71 @@
         }
 
         .dashboard {
-            width: 100%; max-width: 600px;
+            width: 100%; max-width: 500px; position: relative;
             transform: translateY(-100vh); opacity: 0;
             transition: transform 4.5s cubic-bezier(0.16, 1, 0.3, 1), opacity 2.5s ease-in-out;
         }
 
         .dashboard.slide-down { transform: translateY(0); opacity: 1; pointer-events: auto; }
 
-        /* 顶部名字区域 */
-        .user-header { margin-bottom: 40px; }
-        
+        /* 核心：液态玻璃容器 */
+        .liquid-container {
+            position: relative;
+            padding: 40px 45px;
+            border-radius: 40px; /* 大圆角看起来更像水滴/液态 */
+            overflow: hidden;
+            z-index: 1;
+            
+            /* 1. 基础背景：极低透明度的深色 + 极高的饱和模糊 */
+            background: rgba(20, 25, 35, 0.2);
+            backdrop-filter: blur(40px) saturate(250%) contrast(120%);
+            -webkit-backdrop-filter: blur(40px) saturate(250%) contrast(120%);
+            
+            /* 2. 物理边缘厚度：多重内阴影 */
+            box-shadow: 
+                inset 0 0 0 1px rgba(255, 255, 255, 0.1), /* 极细描边 */
+                inset 0 0 20px rgba(255, 255, 255, 0.15), /* 内部泛白 */
+                inset 0 4px 10px rgba(255, 255, 255, 0.3), /* 顶部高光折射 */
+                inset 0 -4px 10px rgba(0, 0, 0, 0.2), /* 底部暗角 */
+                0 30px 60px rgba(0, 0, 0, 0.4); /* 外部环境阴影 */
+            
+            /* 3. 引入 SVG 扭曲滤镜（让背景产生液态水波感） */
+            /* 注意：如果手机端不支持 url 滤镜，会自动回退到普通的背景模糊 */
+        }
+
+        /* 液态高光反光层 */
+        .liquid-container::before {
+            content: ''; position: absolute; inset: 0;
+            background: 
+                linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 40%),
+                radial-gradient(circle at 80% 20%, rgba(255,255,255,0.1) 0%, transparent 30%);
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        /* 动态流光（可选的呼吸灯效果） */
+        .liquid-container::after {
+            content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+            background: conic-gradient(from 180deg at 50% 50%, rgba(255,255,255,0) 0deg, rgba(255,255,255,0.05) 180deg, rgba(255,255,255,0) 360deg);
+            animation: rotateLight 10s linear infinite;
+            pointer-events: none; z-index: -1;
+        }
+
+        @keyframes rotateLight {
+            100% { transform: rotate(360deg); }
+        }
+
+        /* 内容区排版 */
         .greeting {
-            font-size: 13px; color: rgba(255,255,255,0.6); 
+            font-size: 12px; color: rgba(255,255,255,0.6); 
             text-transform: uppercase; letter-spacing: 4px; margin-bottom: 10px;
         }
 
         .user-name {
             font-family: 'Playfair Display', serif;
-            font-size: 64px; font-weight: 400; line-height: 1;
+            font-size: 52px; font-weight: 400; line-height: 1;
             color: #fff; letter-spacing: 1px;
+            text-shadow: 0 4px 20px rgba(0,0,0,0.3);
         }
 
         .status-tag {
@@ -95,41 +141,36 @@
             letter-spacing: 1px;
         }
         .status-tag::before {
-            content: ''; width: 8px; height: 8px; background: #10b981;
+            content: ''; width: 6px; height: 6px; background: #10b981;
             border-radius: 50%; box-shadow: 0 0 10px #10b981;
         }
 
-        /* 加载动画 (深色版) */
+        /* 极简加载 */
         .loading-box { display: flex; align-items: center; gap: 12px; margin-top: 30px; }
         .spinner {
-            width: 16px; height: 16px; border: 1.5px solid rgba(255,255,255,0.1);
+            width: 16px; height: 16px; border: 1.5px solid rgba(255,255,255,0.2);
             border-top: 1.5px solid #fff; border-radius: 50%;
             animation: spin 1s linear infinite;
         }
         @keyframes spin { 100% { transform: rotate(360deg); } }
         .loading-text { font-size: 12px; color: rgba(255,255,255,0.5); letter-spacing: 1px; }
 
-        /* 数据微模块 (胶囊玻璃) */
-        .data-capsules { display: flex; flex-direction: column; gap: 15px; margin-top: 30px; }
+        /* 数据模块 */
+        .data-capsules { display: flex; flex-direction: column; gap: 12px; margin-top: 30px; }
         
         .capsule {
             display: flex; align-items: center; justify-content: space-between;
-            padding: 16px 24px;
-            width: fit-content; min-width: 320px;
-            
-            /* 核心：高级深色微玻璃 */
-            background: rgba(15, 20, 30, 0.3);
-            backdrop-filter: blur(20px) saturate(150%);
-            -webkit-backdrop-filter: blur(20px) saturate(150%);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 12px; /* 不那么圆，带有科技感 */
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.1);
+            padding: 16px 20px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            /* 胶囊内部也有极淡的玻璃感 */
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.1);
             transition: 0.3s;
         }
         .capsule:hover {
-            background: rgba(25, 35, 50, 0.5);
-            border-color: rgba(255, 255, 255, 0.2);
-            transform: translateX(10px);
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.15);
         }
 
         .cap-label { 
@@ -144,30 +185,38 @@
         }
 
         /* 底部操作 */
-        .actions { margin-top: 40px; }
+        .actions { margin-top: 30px; }
         .btn-logout {
-            padding: 14px 40px; background: transparent; color: rgba(255,255,255,0.6);
-            border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 50px;
-            font-size: 13px; font-weight: 400; cursor: pointer; transition: all 0.3s;
+            width: 100%; padding: 16px; background: transparent; color: rgba(255,255,255,0.7);
+            border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 50px;
+            font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.3s;
             letter-spacing: 2px; text-transform: uppercase;
         }
         .btn-logout:hover { 
             background: #fff; color: #000; border-color: #fff;
         }
 
+        /* 手机端适配 */
         @media (max-width: 768px) {
-            .video-overlay { background: rgba(0,0,0,0.5); } /* 手机端增强暗化 */
+            .video-overlay { background: rgba(0,0,0,0.5); }
             #intro-screen { justify-content: center; padding-left: 0; text-align: center; }
             .intro-title { font-size: 56px; }
-            #main-panel { justify-content: center; padding-left: 0; }
-            .dashboard { text-align: center; display: flex; flex-direction: column; align-items: center; }
-            .user-name { font-size: 48px; }
-            .capsule { min-width: 300px; }
-            .capsule:hover { transform: translateY(-2px); }
+            #main-panel { justify-content: center; padding-left: 0; padding: 20px; }
+            .dashboard { text-align: left; }
+            .user-name { font-size: 44px; }
+            .liquid-container { padding: 30px; border-radius: 30px; }
         }
     </style>
 </head>
 <body>
+
+    <!-- SVG 水波扭曲滤镜 -->
+    <svg style="display: none;">
+        <filter id="liquid-distortion">
+            <feTurbulence type="fractalNoise" baseFrequency="0.01 0.01" numOctaves="1" result="noise" />
+            <feDisplacementMap in="SourceGraphic" in2="noise" scale="20" xChannelSelector="R" yChannelSelector="G" />
+        </filter>
+    </svg>
 
     <div class="video-container">
         <video id="bgVideo" src="bg.mp4" poster="bg.jpg" autoplay loop muted playsinline></video>
@@ -181,40 +230,38 @@
         </div>
     </div>
 
-    <!-- 非对称悬浮仪表盘 -->
+    <!-- 液态玻璃面板 -->
     <div id="main-panel">
         <div class="dashboard" id="profile-glass">
             
-            <div class="user-header">
+            <div class="liquid-container">
                 <div class="greeting">Welcome back</div>
                 <div class="user-name" id="displayUser">加载中...</div>
                 <div class="status-tag">System Active</div>
-            </div>
 
-            <!-- 加载圈 -->
-            <div id="loadingState" class="loading-box">
-                <div class="spinner"></div>
-                <div class="loading-text">正在同步云端凭证...</div>
-            </div>
+                <div id="loadingState" class="loading-box">
+                    <div class="spinner"></div>
+                    <div class="loading-text">正在同步云端凭证...</div>
+                </div>
 
-            <!-- 微模块数据胶囊 -->
-            <div class="data-capsules" id="dataList" style="display: none;">
-                <div class="capsule">
-                    <div class="cap-label"><i class="fab fa-qq"></i> QQ</div>
-                    <div class="cap-value" id="displayQQ">-</div>
+                <div class="data-capsules" id="dataList" style="display: none;">
+                    <div class="capsule">
+                        <div class="cap-label"><i class="fab fa-qq"></i> QQ</div>
+                        <div class="cap-value" id="displayQQ">-</div>
+                    </div>
+                    <div class="capsule">
+                        <div class="cap-label"><i class="far fa-calendar-alt"></i> EXPIRY</div>
+                        <div class="cap-value" id="displayExpiry">-</div>
+                    </div>
+                    <div class="capsule">
+                        <div class="cap-label"><i class="fas fa-fingerprint"></i> DEVICE</div>
+                        <div class="cap-value" id="displayDevice">-</div>
+                    </div>
                 </div>
-                <div class="capsule">
-                    <div class="cap-label"><i class="far fa-calendar-alt"></i> EXPIRY</div>
-                    <div class="cap-value" id="displayExpiry">-</div>
-                </div>
-                <div class="capsule">
-                    <div class="cap-label"><i class="fas fa-fingerprint"></i> DEVICE</div>
-                    <div class="cap-value" id="displayDevice">-</div>
-                </div>
-            </div>
 
-            <div class="actions">
-                <button class="btn-logout" onclick="logout()">Log out</button>
+                <div class="actions">
+                    <button class="btn-logout" onclick="logout()">Log out</button>
+                </div>
             </div>
             
         </div>
