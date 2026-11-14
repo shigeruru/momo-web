@@ -24,10 +24,9 @@
         .video-container { position: fixed; inset: 0; z-index: 0; background: #000; }
         .video-container video { width: 100%; height: 100%; object-fit: cover; }
         
-        /* 极度轻微的暗角，不影响视频清晰度 */
         .video-overlay {
             position: fixed; inset: 0; z-index: 1;
-            background: radial-gradient(circle at center, rgba(0,0,0,0) 30%, rgba(0,0,0,0.3) 100%);
+            background: radial-gradient(circle at center, rgba(0,0,0,0) 30%, rgba(0,0,0,0.4) 100%);
             pointer-events: none;
         }
 
@@ -64,49 +63,45 @@
         }
         
         .dashboard {
-            width: 90%; max-width: 320px; /* 完美还原截图的修长比例 */
-            transform: translateY(-100vh); opacity: 0;
+            width: 90%; max-width: 380px; /* 👈 面板放大 */
+            transform: translateY(-100vh) translateZ(0); /* GPU 加速 */
+            opacity: 0;
+            will-change: transform, opacity; /* 提示浏览器优化动画 */
             transition: transform 4.5s cubic-bezier(0.16, 1, 0.3, 1), opacity 2.5s ease-in-out;
         }
-        .dashboard.slide-down { transform: translateY(0); opacity: 1; pointer-events: auto; }
+        .dashboard.slide-down { transform: translateY(0) translateZ(0); opacity: 1; pointer-events: auto; }
 
-        /* ================= 4. 终极液态玻璃 (Liquid Glass) ================= */
+        /* ================= 4. 优化性能的液态玻璃 ================= */
         .liquid-glass {
             position: relative;
-            padding: 24px;
+            padding: 28px 24px; /* 增加内边距，更大气 */
             border-radius: 28px; 
             overflow: hidden;
             isolation: isolate;
             
-            /* 1. 极低模糊，极高饱和，保留背景色彩细节 */
-            backdrop-filter: blur(12px) saturate(200%) contrast(120%);
-            -webkit-backdrop-filter: blur(12px) saturate(200%) contrast(120%);
+            /* 👈 降频优化：降低 blur 和 saturate，减轻 GPU 负担 */
+            backdrop-filter: blur(10px) saturate(150%) contrast(110%);
+            -webkit-backdrop-filter: blur(10px) saturate(150%) contrast(110%);
             
-            /* 2. 几乎透明的底色 */
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.02) 100%);
+            /* 👈 加深底色：让文字更清晰 */
+            background: linear-gradient(135deg, rgba(30, 40, 50, 0.4) 0%, rgba(10, 15, 20, 0.2) 100%);
             
-            /* 3. 物理光学边缘 */
+            border: 1px solid rgba(255, 255, 255, 0.2);
             box-shadow: 
-                /* 左侧和顶部高光折射 */
-                inset 1px 1px 2px rgba(255, 255, 255, 0.4),
-                /* 底部和右侧暗角 */
-                inset -1px -1px 2px rgba(0, 0, 0, 0.2),
-                /* 整体极细描边 */
-                0 0 0 1px rgba(255, 255, 255, 0.15),
-                /* 外部悬浮阴影 */
+                inset 1px 1px 2px rgba(255, 255, 255, 0.5), /* 顶部高光 */
+                inset -1px -1px 2px rgba(0, 0, 0, 0.3),      /* 底部暗角 */
                 0 24px 48px rgba(0, 0, 0, 0.4);
         }
 
-        /* 模拟玻璃表面的流光反光 */
         .liquid-glass::before {
             content: ''; position: absolute; inset: 0; z-index: -1;
             background: linear-gradient(105deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 30%);
             pointer-events: none;
         }
 
-        /* ================= 5. Typography (完美贴合截图) ================= */
+        /* ================= 5. Typography ================= */
         .card-title {
-            font-size: 13px; font-weight: 500;
+            font-size: 14px; font-weight: 600;
             color: rgba(255, 255, 255, 0.9);
             margin-bottom: 24px; letter-spacing: 0.5px;
         }
@@ -115,56 +110,55 @@
             display: flex; align-items: center; gap: 16px; margin-bottom: 30px;
         }
 
-        /* 圆形头像 (⚪) */
         .avatar-circle {
-            width: 48px; height: 48px;
+            width: 54px; height: 54px; /* 头像稍微放大 */
             border-radius: 50%; 
             background: rgba(255, 255, 255, 0.1);
             backdrop-filter: blur(5px);
             display: flex; justify-content: center; align-items: center;
-            font-size: 16px; font-weight: 500; color: #fff;
-            border: 1px solid rgba(255, 255, 255, 0.2); 
+            font-size: 18px; font-weight: 500; color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.3); 
             box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.3); 
         }
 
-        .user-identity { display: flex; flex-direction: column; gap: 2px; }
-        .user-name { font-size: 16px; font-weight: 500; color: #fff; }
-        .user-role { font-size: 12px; color: rgba(255, 255, 255, 0.6); font-weight: 400; }
+        .user-identity { display: flex; flex-direction: column; gap: 4px; }
+        .user-name { font-size: 18px; font-weight: 600; color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.3); }
+        .user-role { font-size: 13px; color: rgba(255, 255, 255, 0.7); }
 
-        /* Data List (紧凑排版) */
-        .data-list { display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px; }
+        .data-list { display: flex; flex-direction: column; gap: 16px; margin-bottom: 28px; }
         .data-row {
-            display: flex; justify-content: space-between; align-items: center; font-size: 13px;
+            display: flex; justify-content: space-between; align-items: center; font-size: 14px; /* 字号放大 */
         }
-        .label { color: rgba(255, 255, 255, 0.7); font-weight: 400; }
+        .label { color: rgba(255, 255, 255, 0.7); font-weight: 400; text-shadow: 0 1px 1px rgba(0,0,0,0.2); }
         .value { 
-            color: rgba(255, 255, 255, 0.95); font-weight: 400; 
+            color: rgba(255, 255, 255, 1); font-weight: 500; 
             font-family: ui-monospace, SFMono-Regular, monospace; 
+            text-shadow: 0 1px 2px rgba(0,0,0,0.4);
         }
 
-        /* Button (贴图里的浅色透明按键) */
         .btn-logout {
-            width: 100%; padding: 12px;
+            width: 100%; padding: 14px;
             background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.2);
             border-radius: 12px; color: rgba(255, 255, 255, 0.9);
-            font-size: 12px; font-weight: 500; cursor: pointer; transition: all 0.3s;
+            font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.3s;
             text-transform: uppercase; letter-spacing: 1px;
+            text-shadow: 0 1px 1px rgba(0,0,0,0.2);
         }
         .btn-logout:hover {
             background: rgba(255, 255, 255, 0.2);
-            border-color: rgba(255, 255, 255, 0.3);
+            border-color: rgba(255, 255, 255, 0.4);
         }
 
-        /* Loading */
-        .loading-box { display: flex; align-items: center; justify-content: center; gap: 8px; height: 100px; }
+        /* Loading (这次我们会让它在后台极快跑完，用户几乎看不到) */
+        .loading-box { display: flex; align-items: center; justify-content: center; gap: 8px; height: 120px; }
         .spinner {
             width: 14px; height: 14px; border: 1.5px solid rgba(255,255,255,0.2);
             border-top: 1.5px solid #fff; border-radius: 50%;
             animation: spin 1s linear infinite;
         }
         @keyframes spin { 100% { transform: rotate(360deg); } }
-        .loading-text { font-size: 11px; color: rgba(255,255,255,0.6); letter-spacing: 1px;}
+        .loading-text { font-size: 12px; color: rgba(255,255,255,0.7); letter-spacing: 1px;}
 
         @media (max-width: 768px) {
             #intro-screen { justify-content: center; padding-left: 0; text-align: center; }
@@ -204,7 +198,7 @@
 
                 <div id="loadingState" class="loading-box">
                     <div class="spinner"></div>
-                    <div class="loading-text">Syncing data...</div>
+                    <div class="loading-text">Syncing...</div>
                 </div>
 
                 <div class="data-list" id="dataList" style="display: none;">
@@ -251,10 +245,12 @@
                 introContent.classList.remove('show');
                 introContent.classList.add('hide-up'); 
             }, 4500);
+            
+            // 👈 优化点：文字消失的瞬间，立刻开启面板降落，同时后台拉取数据
             setTimeout(() => {
                 profileGlass.classList.add('slide-down');
-                loadUserData(); 
-            }, 6000);
+                loadUserData(); // 数据在面板降落（4.5秒）的过程中就已经拉取好了
+            }, 5000); // 文字飘走500毫秒后开始降面板
         });
 
         async function loadUserData() {
@@ -285,6 +281,7 @@
                 document.getElementById("displayQQ").innerText = "Network Error";
                 document.getElementById("displayExpiry").innerText = "Network Error";
             } finally {
+                // 数据拉取完毕后，直接无缝切换列表，因为此时面板还在缓慢降落，用户不会感觉到任何加载等待
                 document.getElementById('loadingState').style.display = 'none';
                 document.getElementById('dataList').style.display = 'flex';
             }
